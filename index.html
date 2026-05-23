@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BADPLAYZ // @EdvinsG</title>
+  <meta name="description" content="EdvinsG — crypto ambassador. Yellow. Midnight Network. GalaxySwap." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Scanlines + grid backdrop -->
+  <div class="bg-grid"></div>
+  <div class="bg-scanlines"></div>
+  <div class="bg-glow bg-glow--cyan"></div>
+  <div class="bg-glow bg-glow--magenta"></div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="dot"></span>
+      <span>SYS://BADPLAYZ</span>
+    </div>
+    <nav class="topbar__nav">
+      <a href="#about">[about]</a>
+      <a href="#repping">[repping]</a>
+      <a href="#contact">[contact]</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <p class="hero__tag">&gt; booting profile_v1.0...</p>
+      <h1 class="hero__name glitch" data-text="BADPLAYZ">BADPLAYZ</h1>
+      <p class="hero__handle">
+        <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">@EdvinsG</a>
+      </p>
+      <p class="hero__role">
+        <span class="bracket">[</span>
+        crypto ambassador
+        <span class="sep">//</span>
+        community builder
+        <span class="sep">//</span>
+        signal hunter
+        <span class="bracket">]</span>
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#repping">view stack &rarr;</a>
+        <a class="btn btn--ghost" href="https://x.com/EdvinsG" target="_blank" rel="noopener">dm on x</a>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section">
+      <h2 class="section__title">// about</h2>
+      <div class="card">
+        <p>
+          Repping crypto projects on <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">x.com</a>,
+          building communities, and surfacing early signal. I help teams cut through the noise and reach the
+          right audience.
+        </p>
+        <ul class="stats">
+          <li><span class="stats__num">3</span><span class="stats__label">active programs</span></li>
+          <li><span class="stats__num">24/7</span><span class="stats__label">on-chain mode</span></li>
+          <li><span class="stats__num">∞</span><span class="stats__label">posts shipped</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- REPPING -->
+    <section id="repping" class="section">
+      <h2 class="section__title">// currently repping</h2>
+      <div class="grid">
+        <a class="proj" href="https://x.com/Yellow" target="_blank" rel="noopener">
+          <div class="proj__head">
+            <span class="proj__tag">01</span>
+            <span class="proj__status">ACTIVE</span>
+          </div>
+          <h3 class="proj__name">Yellow</h3>
+          <p class="proj__handle">@Yellow</p>
+          <p class="proj__desc">Decentralized clearing layer for traders.</p>
+          <span class="proj__link">visit &rarr;</span>
+        </a>
+
+        <a class="proj" href="https://x.com/MidnightNtwrk" target="_blank" rel="noopener">
+          <div class="proj__head">
+            <span class="proj__tag">02</span>
+            <span class="proj__status">ACTIVE</span>
+          </div>
+          <h3 class="proj__name">Midnight Network</h3>
+          <p class="proj__handle">@MidnightNtwrk</p>
+          <p class="proj__desc">Data protection blockchain. Privacy by default.</p>
+          <span class="proj__link">visit &rarr;</span>
+        </a>
+
+        <a class="proj" href="https://x.com/GalaxySwap" target="_blank" rel="noopener">
+          <div class="proj__head">
+            <span class="proj__tag">03</span>
+            <span class="proj__status">ACTIVE</span>
+          </div>
+          <h3 class="proj__name">GalaxySwap</h3>
+          <p class="proj__handle">@GalaxySwap</p>
+          <p class="proj__desc">DEX built for the next wave of swappers.</p>
+          <span class="proj__link">visit &rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section">
+      <h2 class="section__title">// open channel</h2>
+      <div class="card card--center">
+        <p class="contact__line">&gt; want me to rep your project?</p>
+        <a class="btn btn--primary btn--big" href="https://x.com/EdvinsG" target="_blank" rel="noopener">
+          ping @EdvinsG on x &rarr;
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>// badplayz.exe</span>
+    <span>built with vibes &amp; coffee</span>
+    <span id="year"></span>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
