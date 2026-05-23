@@ -385,27 +385,55 @@ main { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
   color: var(--muted);
   font-size: 13px;
   letter-spacing: 0.06em;
-  margin-bottom: 18px;
+  margin-bottom: 26px;
   text-align: center;
 }
-.transmissions__embed {
+
+.transmissions__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.transmissions__tweet {
   border: 1px solid var(--border);
   background: rgba(0, 240, 255, 0.03);
   padding: 8px;
-  border-radius: 4px;
-  min-height: 200px;
   position: relative;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: all 0.2s ease;
 }
-.transmissions__embed::before {
-  content: "// loading transmissions...";
+.transmissions__tweet:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.18);
+}
+.transmissions__tweet::before {
+  content: "// loading transmission...";
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.5;
+  z-index: 0;
+}
+.transmissions__tweet .twitter-tweet,
+.transmissions__tweet iframe {
+  position: relative;
+  z-index: 1;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.transmissions__cta {
+  margin-top: 32px;
+  text-align: center;
 }
 
 .contact__follow {
