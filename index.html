@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BADPLAYZ // @EdvinsG</title>
   <meta name="description" content="EdvinsG — crypto ambassador. Yellow. Midnight Network. GalaxySwap." />
+
+  <!-- Open Graph (Facebook, Discord, LinkedIn, etc.) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BADPLAYZ // @EdvinsG" />
+  <meta property="og:description" content="Crypto ambassador. Repping Yellow, Midnight Network, GalaxySwap." />
+  <meta property="og:url" content="https://edvins99.github.io/Badplayz/" />
+  <meta property="og:image" content="https://edvins99.github.io/Badplayz/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@EdvinsG" />
+  <meta name="twitter:creator" content="@EdvinsG" />
+  <meta name="twitter:title" content="BADPLAYZ // @EdvinsG" />
+  <meta name="twitter:description" content="Crypto ambassador. Repping Yellow, Midnight Network, GalaxySwap." />
+  <meta name="twitter:image" content="https://edvins99.github.io/Badplayz/og-image.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -26,6 +44,7 @@
     <nav class="topbar__nav">
       <a href="#about">[about]</a>
       <a href="#repping">[repping]</a>
+      <a href="#transmissions">[x feed]</a>
       <a href="#contact">[contact]</a>
     </nav>
   </header>
@@ -109,6 +128,24 @@
       </div>
     </section>
 
+    <!-- LATEST FROM X -->
+    <section id="transmissions" class="section">
+      <h2 class="section__title">// transmissions</h2>
+      <div class="card transmissions">
+        <p class="transmissions__intro">live feed from <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">@EdvinsG</a> on x</p>
+        <div class="transmissions__embed">
+          <a class="twitter-timeline"
+             data-theme="dark"
+             data-chrome="noheader nofooter transparent noborders"
+             data-tweet-limit="5"
+             data-height="600"
+             href="https://twitter.com/EdvinsG?ref_src=twsrc%5Etfw">
+            Latest tweets by @EdvinsG
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section id="contact" class="section">
       <h2 class="section__title">// open channel</h2>
@@ -117,6 +154,15 @@
         <a class="btn btn--primary btn--big" href="https://x.com/EdvinsG" target="_blank" rel="noopener">
           ping @EdvinsG on x &rarr;
         </a>
+        <div class="contact__follow">
+          <a href="https://twitter.com/intent/follow?screen_name=EdvinsG"
+             class="twitter-follow-button"
+             data-show-count="true"
+             data-size="large"
+             data-show-screen-name="true">
+            Follow @EdvinsG
+          </a>
+        </div>
       </div>
     </section>
   </main>
@@ -130,5 +176,8 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+
+  <!-- X (Twitter) embed widgets -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
