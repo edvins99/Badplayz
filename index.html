@@ -29,17 +29,23 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Scanlines + grid backdrop -->
+  <!-- ============================================================
+       BACKGROUND FX LAYERS
+       ============================================================ -->
+  <canvas class="bg-matrix" id="matrix"></canvas>
+  <div class="bg-aurora"></div>
   <div class="bg-grid"></div>
   <div class="bg-scanlines"></div>
   <div class="bg-glow bg-glow--cyan"></div>
   <div class="bg-glow bg-glow--magenta"></div>
+  <div class="bg-beam"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
   <!-- Top bar -->
   <header class="topbar">
     <div class="topbar__brand">
       <span class="dot"></span>
-      <span>SYS://BADPLAYZ</span>
+      <span class="topbar__brandtext">SYS://BADPLAYZ</span>
     </div>
     <nav class="topbar__nav">
       <a href="#about">[about]</a>
@@ -52,28 +58,51 @@
   <main>
     <!-- HERO -->
     <section class="hero">
-      <p class="hero__tag">&gt; booting profile_v1.0...</p>
-      <h1 class="hero__name glitch" data-text="BADPLAYZ">BADPLAYZ</h1>
-      <p class="hero__handle">
-        <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">@EdvinsG</a>
-      </p>
-      <p class="hero__role">
-        <span class="bracket">[</span>
-        crypto ambassador
-        <span class="sep">//</span>
-        community builder
-        <span class="sep">//</span>
-        signal hunter
-        <span class="bracket">]</span>
-      </p>
-      <div class="hero__cta">
-        <a class="btn btn--primary" href="#repping">view stack &rarr;</a>
-        <a class="btn btn--ghost" href="https://x.com/EdvinsG" target="_blank" rel="noopener">dm on x</a>
+      <canvas class="hero__city" id="city"></canvas>
+      <div class="hero__cityfade"></div>
+      <div class="hero__flash" id="cityFlash"></div>
+      <div class="hero__content">
+        <p class="hero__tag"><span id="bootText">&gt; booting profile_v1.0...</span><span class="caret">_</span></p>
+        <h1 class="hero__name glitch flicker" data-text="BADPLAYZ">BADPLAYZ</h1>
+        <p class="hero__handle">
+          <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">@EdvinsG</a>
+        </p>
+        <p class="hero__role">
+          <span class="bracket">[</span>
+          crypto ambassador
+          <span class="sep">//</span>
+          community builder
+          <span class="sep">//</span>
+          signal hunter
+          <span class="bracket">]</span>
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="#repping">view stack &rarr;</a>
+          <a class="btn btn--ghost" href="https://x.com/EdvinsG" target="_blank" rel="noopener">dm on x</a>
+        </div>
       </div>
     </section>
 
+    <!-- TICKER -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker__track">
+        <span>CRYPTO AMBASSADOR</span><span class="ticker__dot">◆</span>
+        <span>YELLOW</span><span class="ticker__dot">◆</span>
+        <span>MIDNIGHT NETWORK</span><span class="ticker__dot">◆</span>
+        <span>GALAXYSWAP</span><span class="ticker__dot">◆</span>
+        <span>COMMUNITY BUILDER</span><span class="ticker__dot">◆</span>
+        <span>SIGNAL HUNTER</span><span class="ticker__dot">◆</span>
+        <span>CRYPTO AMBASSADOR</span><span class="ticker__dot">◆</span>
+        <span>YELLOW</span><span class="ticker__dot">◆</span>
+        <span>MIDNIGHT NETWORK</span><span class="ticker__dot">◆</span>
+        <span>GALAXYSWAP</span><span class="ticker__dot">◆</span>
+        <span>COMMUNITY BUILDER</span><span class="ticker__dot">◆</span>
+        <span>SIGNAL HUNTER</span><span class="ticker__dot">◆</span>
+      </div>
+    </div>
+
     <!-- ABOUT -->
-    <section id="about" class="section">
+    <section id="about" class="section reveal">
       <h2 class="section__title">// about</h2>
       <div class="card">
         <p>
@@ -82,7 +111,7 @@
           right audience.
         </p>
         <ul class="stats">
-          <li><span class="stats__num">3</span><span class="stats__label">active programs</span></li>
+          <li><span class="stats__num" data-count="3">0</span><span class="stats__label">active programs</span></li>
           <li><span class="stats__num">24/7</span><span class="stats__label">on-chain mode</span></li>
           <li><span class="stats__num">∞</span><span class="stats__label">posts shipped</span></li>
         </ul>
@@ -90,10 +119,10 @@
     </section>
 
     <!-- REPPING -->
-    <section id="repping" class="section">
+    <section id="repping" class="section reveal">
       <h2 class="section__title">// currently repping</h2>
       <div class="grid">
-        <a class="proj" href="https://x.com/Yellow" target="_blank" rel="noopener">
+        <a class="proj tilt" href="https://x.com/Yellow" target="_blank" rel="noopener">
           <div class="proj__head">
             <span class="proj__tag">01</span>
             <span class="proj__status">ACTIVE</span>
@@ -108,7 +137,7 @@
           <span class="proj__link">visit &rarr;</span>
         </a>
 
-        <a class="proj" href="https://x.com/MidnightNtwrk" target="_blank" rel="noopener">
+        <a class="proj tilt" href="https://x.com/MidnightNtwrk" target="_blank" rel="noopener">
           <div class="proj__head">
             <span class="proj__tag">02</span>
             <span class="proj__status">ACTIVE</span>
@@ -124,7 +153,7 @@
           <span class="proj__link">visit &rarr;</span>
         </a>
 
-        <a class="proj" href="https://x.com/GalaxySwapLabs" target="_blank" rel="noopener">
+        <a class="proj tilt" href="https://x.com/GalaxySwapLabs" target="_blank" rel="noopener">
           <div class="proj__head">
             <span class="proj__tag">03</span>
             <span class="proj__status">ACTIVE</span>
@@ -142,7 +171,7 @@
     </section>
 
     <!-- LATEST FROM X -->
-    <section id="transmissions" class="section">
+    <section id="transmissions" class="section reveal">
       <h2 class="section__title">// transmissions</h2>
       <p class="transmissions__intro">
         featured posts from <a href="https://x.com/EdvinsG" target="_blank" rel="noopener">@EdvinsG</a>
@@ -194,11 +223,34 @@
     </section>
 
     <!-- CONTACT -->
-    <section id="contact" class="section">
+    <section id="contact" class="section reveal">
       <h2 class="section__title">// open channel</h2>
       <div class="card card--center">
         <p class="contact__line">&gt; want me to rep your project?</p>
-        <a class="btn btn--primary btn--big" href="https://x.com/EdvinsG" target="_blank" rel="noopener">
+
+        <!-- Contact channels: X / Telegram / Discord -->
+        <div class="channels">
+          <a class="channel channel--x" href="https://x.com/EdvinsG" target="_blank" rel="noopener">
+            <span class="channel__icon">𝕏</span>
+            <span class="channel__label">X / TWITTER</span>
+            <span class="channel__handle">@EdvinsG</span>
+          </a>
+
+          <a class="channel channel--tg" href="https://t.me/badplayz" target="_blank" rel="noopener">
+            <span class="channel__icon">✈</span>
+            <span class="channel__label">TELEGRAM</span>
+            <span class="channel__handle">@badplayz</span>
+          </a>
+
+          <button class="channel channel--dc" id="discordCopy" type="button" data-handle="badplayz8125">
+            <span class="channel__icon">◈</span>
+            <span class="channel__label">DISCORD</span>
+            <span class="channel__handle">badplayz8125</span>
+            <span class="channel__copied" id="discordCopied">copied!</span>
+          </button>
+        </div>
+
+        <a class="btn btn--big" href="https://x.com/EdvinsG" target="_blank" rel="noopener">
           ping @EdvinsG on x &rarr;
         </a>
         <div class="contact__follow">
@@ -221,7 +273,305 @@
   </footer>
 
   <script>
+    // ===== Year =====
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ===== Boot typing effect =====
+    (function () {
+      const el = document.getElementById('bootText');
+      if (!el) return;
+      const full = '> booting profile_v1.0...';
+      el.textContent = '';
+      let i = 0;
+      (function type() {
+        if (i <= full.length) {
+          el.textContent = full.slice(0, i);
+          i++;
+          setTimeout(type, 45);
+        }
+      })();
+    })();
+
+    // ===== Matrix rain =====
+    (function () {
+      const c = document.getElementById('matrix');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let w, h, cols, drops;
+      const chars = 'アカサタナハマヤラ0123456789ABCDEF$#@%&*+=<>'.split('');
+      const fontSize = 14;
+      function resize() {
+        w = c.width = window.innerWidth;
+        h = c.height = window.innerHeight;
+        cols = Math.floor(w / fontSize);
+        drops = Array(cols).fill(0).map(() => Math.random() * -50);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      function draw() {
+        ctx.fillStyle = 'rgba(5, 5, 10, 0.10)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < cols; i++) {
+          const ch = chars[Math.floor(Math.random() * chars.length)];
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+          ctx.fillStyle = Math.random() > 0.975 ? 'rgba(255,43,214,0.9)' : 'rgba(0,240,255,0.55)';
+          ctx.fillText(ch, x, y);
+          if (y > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+      let last = 0;
+      (function loop(t) {
+        if (t - last > 55) { draw(); last = t; }
+        requestAnimationFrame(loop);
+      })(0);
+    })();
+
+    // ===== Cursor glow =====
+    (function () {
+      const g = document.getElementById('cursorGlow');
+      if (!g || window.matchMedia('(pointer: coarse)').matches) return;
+      let tx = 0, ty = 0, x = 0, y = 0;
+      window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
+      (function follow() {
+        x += (tx - x) * 0.15; y += (ty - y) * 0.15;
+        g.style.transform = `translate(${x}px, ${y}px)`;
+        requestAnimationFrame(follow);
+      })();
+    })();
+
+    // ===== Scroll reveal + counter =====
+    (function () {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) {
+            en.target.classList.add('is-visible');
+            // count up
+            en.target.querySelectorAll('[data-count]').forEach(num => {
+              const target = +num.dataset.count;
+              let cur = 0;
+              const step = Math.max(1, Math.ceil(target / 30));
+              const tick = () => {
+                cur += step;
+                if (cur >= target) { num.textContent = target; }
+                else { num.textContent = cur; requestAnimationFrame(tick); }
+              };
+              tick();
+            });
+            obs.unobserve(en.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.reveal').forEach(s => obs.observe(s));
+    })();
+
+    // ===== Card tilt =====
+    (function () {
+      if (window.matchMedia('(pointer: coarse)').matches) return;
+      document.querySelectorAll('.tilt').forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `perspective(800px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) translateY(-4px)`;
+        });
+        card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+      });
+    })();
+
+    // ===== Discord copy =====
+    (function () {
+      const btn = document.getElementById('discordCopy');
+      const note = document.getElementById('discordCopied');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const handle = btn.dataset.handle;
+        navigator.clipboard?.writeText(handle).then(() => {
+          note.classList.add('show');
+          setTimeout(() => note.classList.remove('show'), 1600);
+        });
+      });
+    })();
+
+    // ===== Cyberpunk city + lightning =====
+    (function () {
+      const cv = document.getElementById('city');
+      const flash = document.getElementById('cityFlash');
+      if (!cv) return;
+      const ctx = cv.getContext('2d');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let W, H, dpr, layers, rain, bolt = null, flashA = 0, t = 0;
+
+      const NEON = ['#00f0ff', '#ff2bd6', '#9b5cff', '#ffe24a', '#4dffa6'];
+
+      function rnd(a, b) { return a + Math.random() * (b - a); }
+
+      function buildLayer(depth, count, hMin, hMax, shade, neonChance) {
+        const arr = [];
+        let x = -20;
+        while (x < W + 20) {
+          const bw = rnd(34, 90) * (1 + depth * 0.4);
+          const bh = rnd(hMin, hMax) * H;
+          const b = { x, w: bw, h: bh, shade, depth, windows: [] };
+          // window grid
+          const cols = Math.max(1, Math.floor(bw / 14));
+          const rows = Math.max(2, Math.floor(bh / 16));
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              if (Math.random() < neonChance) {
+                b.windows.push({
+                  wx: 6 + c * 14, wy: 10 + r * 16,
+                  col: NEON[(Math.random() * NEON.length) | 0],
+                  on: Math.random() > 0.4,
+                  ph: Math.random() * Math.PI * 2
+                });
+              }
+            }
+          }
+          // occasional rooftop neon sign
+          b.sign = Math.random() < 0.18 ? NEON[(Math.random() * NEON.length) | 0] : null;
+          arr.push(b);
+          x += bw + rnd(4, 16);
+        }
+        return arr;
+      }
+
+      function build() {
+        layers = [
+          buildLayer(0, 0, 0.18, 0.34, '#0a0a18', 0.10), // far
+          buildLayer(0.5, 0, 0.26, 0.5, '#0d0d22', 0.16), // mid
+          buildLayer(1, 0, 0.34, 0.62, '#101030', 0.22)  // near
+        ];
+        rain = [];
+        const n = reduce ? 0 : 140;
+        for (let i = 0; i < n; i++) rain.push({ x: Math.random() * W, y: Math.random() * H, l: rnd(8, 18), s: rnd(6, 12) });
+      }
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const r = cv.getBoundingClientRect();
+        W = r.width; H = r.height || 480;
+        cv.width = W * dpr; cv.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        build();
+      }
+
+      function lightning() {
+        // build a jagged bolt
+        const x0 = rnd(W * 0.15, W * 0.85);
+        const seg = [{ x: x0, y: 0 }];
+        let x = x0, y = 0;
+        const targetY = rnd(H * 0.4, H * 0.7);
+        while (y < targetY) {
+          y += rnd(18, 40);
+          x += rnd(-32, 32);
+          seg.push({ x, y });
+        }
+        bolt = { seg, life: 1, branches: [] };
+        // branches
+        for (let i = 1; i < seg.length - 1; i++) {
+          if (Math.random() < 0.35) {
+            const s = seg[i];
+            bolt.branches.push([{ x: s.x, y: s.y }, { x: s.x + rnd(-50, 50), y: s.y + rnd(20, 60) }]);
+          }
+        }
+        flashA = 0.9;
+        if (flash) { flash.style.opacity = '0.85'; setTimeout(() => flash.style.opacity = '0', 90);
+          setTimeout(() => { flash.style.opacity = '0.5'; setTimeout(() => flash.style.opacity = '0', 70); }, 140); }
+      }
+
+      function drawBolt() {
+        if (!bolt) return;
+        ctx.save();
+        ctx.strokeStyle = `rgba(180,240,255,${bolt.life})`;
+        ctx.lineWidth = 2.2; ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 18;
+        ctx.beginPath(); ctx.moveTo(bolt.seg[0].x, bolt.seg[0].y);
+        bolt.seg.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+        bolt.branches.forEach(br => { ctx.beginPath(); ctx.moveTo(br[0].x, br[0].y); ctx.lineTo(br[1].x, br[1].y); ctx.stroke(); });
+        ctx.restore();
+        bolt.life -= 0.06;
+        if (bolt.life <= 0) bolt = null;
+      }
+
+      function frame() {
+        t += 0.016;
+        // sky
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#0a0618'); g.addColorStop(0.55, '#0d0a22'); g.addColorStop(1, '#160a2e');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+        // flash brighten
+        if (flashA > 0) { ctx.fillStyle = `rgba(120,90,200,${flashA * 0.5})`; ctx.fillRect(0, 0, W, H); flashA -= 0.04; }
+
+        // horizon glow
+        const hg = ctx.createRadialGradient(W / 2, H, 10, W / 2, H, H * 0.8);
+        hg.addColorStop(0, 'rgba(255,43,214,0.18)'); hg.addColorStop(1, 'transparent');
+        ctx.fillStyle = hg; ctx.fillRect(0, 0, W, H);
+
+        // buildings (far -> near)
+        layers.forEach((layer, li) => {
+          layer.forEach(b => {
+            const top = H - b.h;
+            ctx.fillStyle = b.shade;
+            ctx.fillRect(b.x, top, b.w, b.h);
+            // outline glow on near layer
+            if (li === 2) { ctx.strokeStyle = 'rgba(0,240,255,0.10)'; ctx.lineWidth = 1; ctx.strokeRect(b.x + .5, top + .5, b.w - 1, b.h - 1); }
+            // windows
+            b.windows.forEach(wn => {
+              const flick = (Math.sin(t * 2 + wn.ph) > 0.2);
+              if (wn.on && flick) {
+                ctx.fillStyle = wn.col;
+                ctx.globalAlpha = 0.85 * (0.5 + 0.5 * li / 2);
+                ctx.shadowColor = wn.col; ctx.shadowBlur = 6;
+                ctx.fillRect(b.x + wn.wx, top + wn.wy, 4, 6);
+                ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+              }
+            });
+            // neon sign
+            if (b.sign) {
+              ctx.fillStyle = b.sign; ctx.globalAlpha = 0.7 + 0.3 * Math.sin(t * 4 + b.x);
+              ctx.shadowColor = b.sign; ctx.shadowBlur = 12;
+              ctx.fillRect(b.x + b.w * 0.35, top - 14, 4, 14);
+              ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+            }
+          });
+        });
+
+        // rain
+        if (rain.length) {
+          ctx.strokeStyle = 'rgba(120,200,255,0.18)'; ctx.lineWidth = 1;
+          ctx.beginPath();
+          rain.forEach(d => {
+            ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 2, d.y + d.l);
+            d.y += d.s; d.x -= 0.6;
+            if (d.y > H) { d.y = -10; d.x = Math.random() * W; }
+          });
+          ctx.stroke();
+        }
+
+        // lightning bolt
+        drawBolt();
+
+        requestAnimationFrame(frame);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      if (!reduce) {
+        frame();
+        (function strike() {
+          lightning();
+          setTimeout(strike, rnd(2600, 6000));
+        })();
+        setTimeout(lightning, 900);
+      } else {
+        // static single frame
+        frame.length; t = 1; (function once(){ const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a0618'); g.addColorStop(1,'#160a2e'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); layers.forEach((layer,li)=>layer.forEach(b=>{const top=H-b.h; ctx.fillStyle=b.shade; ctx.fillRect(b.x,top,b.w,b.h); b.windows.forEach(wn=>{if(wn.on){ctx.fillStyle=wn.col; ctx.fillRect(b.x+wn.wx, top+wn.wy,4,6);}});})); })();
+      }
+    })();
   </script>
 
   <!-- X (Twitter) embed widgets -->
