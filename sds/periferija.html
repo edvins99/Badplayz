@@ -78,14 +78,6 @@
       <p class="footer__copy">Copyright © 2026 SDS.LV</p>
     </div>
   </footer>
-  <script>
-    const toggle=document.getElementById('navToggle'),nav=document.getElementById('nav');
-    toggle.addEventListener('click',()=>{nav.classList.toggle('is-open');toggle.classList.toggle('is-active');});
-    document.querySelectorAll('.nav__droptoggle').forEach(b=>b.addEventListener('click',e=>{
-      if(window.innerWidth<=880){e.preventDefault();b.parentElement.classList.toggle('is-open');}
-    }));
-    const header=document.querySelector('.header');
-    window.addEventListener('scroll',()=>header.classList.toggle('is-scrolled',window.scrollY>10));
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

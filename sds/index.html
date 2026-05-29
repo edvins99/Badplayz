@@ -298,32 +298,6 @@
     </div>
   </footer>
 
-  <script>
-    // Mobilā izvēlne
-    const toggle = document.getElementById('navToggle');
-    const nav = document.getElementById('nav');
-    toggle.addEventListener('click', () => {
-      nav.classList.toggle('is-open');
-      toggle.classList.toggle('is-active');
-    });
-    // Dropdown izvēlnes mobilajā
-    document.querySelectorAll('.nav__droptoggle').forEach(b =>
-      b.addEventListener('click', e => {
-        if (window.innerWidth <= 880) { e.preventDefault(); b.parentElement.classList.toggle('is-open'); }
-      })
-    );
-    // Aizvērt izvēlni pēc klikšķa uz saites
-    nav.querySelectorAll('a').forEach(a =>
-      a.addEventListener('click', () => {
-        nav.classList.remove('is-open');
-        toggle.classList.remove('is-active');
-      })
-    );
-    // Header ēna ritinot
-    const header = document.querySelector('.header');
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('is-scrolled', window.scrollY > 10);
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

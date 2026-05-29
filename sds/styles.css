@@ -94,48 +94,60 @@ a { text-decoration: none; color: inherit; }
 /* ============================================================
    HERO
    ============================================================ */
-.hero { position: relative; overflow: hidden; padding: 96px 0 88px; }
+.hero {
+  position: relative; overflow: hidden; padding: 110px 0 96px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 42%, #7c3aed 72%, #06b6d4 120%);
+}
 .hero__bg {
-  position: absolute; inset: 0; z-index: -1;
+  position: absolute; inset: 0; z-index: 0;
   background:
-    radial-gradient(900px 500px at 80% -10%, rgba(59, 130, 246, 0.18), transparent 60%),
-    radial-gradient(700px 500px at 0% 110%, rgba(6, 182, 212, 0.12), transparent 55%),
-    linear-gradient(180deg, #f8fafc, #ffffff);
+    radial-gradient(620px 440px at 84% 8%, rgba(6, 182, 212, 0.55), transparent 60%),
+    radial-gradient(520px 420px at 8% 92%, rgba(236, 72, 153, 0.40), transparent 60%),
+    radial-gradient(760px 520px at 50% 125%, rgba(124, 58, 237, 0.45), transparent 60%);
 }
 .hero__bg::before {
   content: ''; position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at 70% 30%, black, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at 70% 30%, black, transparent 75%);
+    linear-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.10) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse at 70% 30%, black, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at 70% 30%, black, transparent 78%);
 }
+.hero__inner { position: relative; z-index: 1; }
 .hero__eyebrow {
   display: inline-block; font-weight: 600; font-size: 13px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--blue);
-  background: rgba(59, 130, 246, 0.1); padding: 6px 14px; border-radius: 999px;
-  margin-bottom: 22px;
+  text-transform: uppercase; color: #fff;
+  background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .hero__title {
   font-size: clamp(34px, 6vw, 60px); font-weight: 800; line-height: 1.1;
-  letter-spacing: -0.02em; color: var(--ink); margin-bottom: 22px;
+  letter-spacing: -0.02em; color: #fff; margin-bottom: 22px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
 }
 .hero__sub {
-  font-size: clamp(16px, 2vw, 19px); color: var(--slate);
+  font-size: clamp(16px, 2vw, 19px); color: rgba(255, 255, 255, 0.92);
   max-width: 600px; margin-bottom: 36px;
 }
 .hero__cta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 44px; }
 
+/* Pogas uz krāsainā hero fona */
+.hero .btn--primary { background: #fff; color: var(--blue); }
+.hero .btn--primary:hover { background: #f1f5f9; color: var(--blue-dark); box-shadow: 0 20px 48px rgba(0, 0, 0, 0.25); }
+.hero .btn--ghost { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(255, 255, 255, 0.55); }
+.hero .btn--ghost:hover { background: rgba(255, 255, 255, 0.22); border-color: #fff; }
+
 .hero__badges {
   list-style: none; display: flex; gap: 28px; flex-wrap: wrap;
-  font-size: 15px; color: var(--slate); font-weight: 500;
+  font-size: 15px; color: rgba(255, 255, 255, 0.95); font-weight: 500;
 }
 .hero__badges li { display: flex; align-items: center; gap: 8px; }
 .badge-num {
   display: inline-grid; place-items: center;
   width: 22px; height: 22px; border-radius: 50%;
-  background: var(--cyan); color: #fff; font-size: 12px; font-weight: 700;
+  background: #fff; color: var(--blue); font-size: 12px; font-weight: 700;
 }
 
 /* ============================================================
@@ -272,12 +284,13 @@ a { text-decoration: none; color: inherit; }
 .nav__droptoggle span { font-size: 10px; transition: transform .2s; }
 .nav__drop:hover .nav__droptoggle { color: var(--ink); }
 .nav__menu {
-  position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md); padding: 8px; min-width: 230px;
-  opacity: 0; visibility: hidden; transition: opacity .2s, transform .2s; z-index: 60;
+  box-shadow: var(--shadow-md); padding: 8px; padding-top: 12px; min-width: 230px;
+  opacity: 0; visibility: hidden; transition: opacity .18s; z-index: 60;
 }
-.nav__drop:hover .nav__menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+.nav__drop:hover .nav__menu,
+.nav__drop.is-open .nav__menu { opacity: 1; visibility: visible; }
 .nav__menu a {
   display: block; padding: 10px 14px; border-radius: 8px; font-size: 14px;
   color: var(--slate); transition: background .15s, color .15s;
