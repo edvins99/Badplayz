@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lietoti datoru komponenti – SDS.LV</title>
+  <meta name="description" content="Lietotas datoru komponentes un rezerves daļas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header" id="top">
+    <div class="container header__inner">
+      <a href="index.html" class="logo"><span class="logo__mark">SDS</span><span class="logo__dot">.LV</span></a>
+
+      <nav class="nav" id="nav">
+        <a href="index.html">Sākums</a>
+        <a href="index.html#par-mums">Par mums</a>
+        <div class="nav__drop">
+          <button class="nav__droptoggle">Datori <span>▾</span></button>
+          <div class="nav__menu">
+            <a href="lietoti-datori.html">Lietoti datori</a>
+            <a href="apple.html">Lietota Apple tehnika</a>
+            <a href="jauni-datori.html">Jauni datori</a>
+            <a href="lietoti-komponenti.html">Lietoti datoru komponenti</a>
+          </div>
+        </div>
+        <div class="nav__drop">
+          <button class="nav__droptoggle">Pakalpojumi <span>▾</span></button>
+          <div class="nav__menu">
+            <a href="remonts.html">Datoru remonts</a>
+            <a href="kartridzi.html">Kārtridži</a>
+            <a href="periferija.html">Perifērija un aksesuāri</a>
+            <a href="komponentes.html">Komponentes</a>
+          </div>
+        </div>
+        <a href="index.html#kontakti">Kontakti</a>
+      </nav>
+      <a href="tel:+37128731316" class="header__cta">+371 28731316</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Atvērt izvēlni"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+  <main>
+    <section class="pagehead">
+      <div class="container">
+        <nav class="crumbs"><a href="index.html">Sākums</a> <span>/</span> Lietoti datoru komponenti</nav>
+        <h1 class="pagehead__title">Lietoti datoru komponenti</h1>
+        <p class="pagehead__lead">Lietotas datoru komponentes un rezerves daļas.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <div class="pgrid">
+        <article class="pcard">
+          <div class="pcard__media"><img src="img/58ac2b1f9f49.png" alt="Thermaltake Rome 750W PSU" loading="lazy" /></div>
+          <div class="pcard__body">
+            <h3 class="pcard__name">Thermaltake Rome 750W PSU</h3>
+            <ul class="pspec"><li><span class="pspec__k">Model</span><span class="pspec__v">TP-750AH3CCG-C</span></li><li><span class="pspec__k">Watts</span><span class="pspec__v">750W</span></li><li><span class="pspec__k">Dimension ( W / H / D )</span><span class="pspec__v">86mm x 150mm x 160mm</span></li><li><span class="pspec__k">PCI-E 6+2pin</span><span class="pspec__v">PCI-E 6+2pin x 4</span></li></ul>
+            <div class="pcard__price">50 Eur</div>
+            <a class="pcard__btn" href="index.html#kontakti">Interesē &rarr;</a>
+          </div>
+        </article>
+      </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <span class="logo"><span class="logo__mark">SDS</span><span class="logo__dot">.LV</span></span>
+        <p>Datortehnikas remonts un tirdzniecība</p>
+      </div>
+      <nav class="footer__nav">
+        <a href="lietoti-datori.html">Lietoti datori</a>
+        <a href="apple.html">Apple tehnika</a>
+        <a href="jauni-datori.html">Jauni datori</a>
+        <a href="remonts.html">Remonts</a>
+        <a href="index.html#kontakti">Kontakti</a>
+      </nav>
+      <p class="footer__copy">Copyright © 2026 SDS.LV</p>
+    </div>
+  </footer>
+  <script>
+    const toggle=document.getElementById('navToggle'),nav=document.getElementById('nav');
+    toggle.addEventListener('click',()=>{nav.classList.toggle('is-open');toggle.classList.toggle('is-active');});
+    document.querySelectorAll('.nav__droptoggle').forEach(b=>b.addEventListener('click',e=>{
+      if(window.innerWidth<=880){e.preventDefault();b.parentElement.classList.toggle('is-open');}
+    }));
+    const header=document.querySelector('.header');
+    window.addEventListener('scroll',()=>header.classList.toggle('is-scrolled',window.scrollY>10));
+  </script>
+</body>
+</html>

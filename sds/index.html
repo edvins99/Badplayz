@@ -29,8 +29,24 @@
       <nav class="nav" id="nav">
         <a href="#top">Sākums</a>
         <a href="#par-mums">Par mums</a>
-        <a href="#datori">Datori</a>
-        <a href="#pakalpojumi">Pakalpojumi</a>
+        <div class="nav__drop">
+          <button class="nav__droptoggle">Datori <span>▾</span></button>
+          <div class="nav__menu">
+            <a href="lietoti-datori.html">Lietoti datori</a>
+            <a href="apple.html">Lietota Apple tehnika</a>
+            <a href="jauni-datori.html">Jauni datori</a>
+            <a href="lietoti-komponenti.html">Lietoti datoru komponenti</a>
+          </div>
+        </div>
+        <div class="nav__drop">
+          <button class="nav__droptoggle">Pakalpojumi <span>▾</span></button>
+          <div class="nav__menu">
+            <a href="remonts.html">Datoru remonts</a>
+            <a href="kartridzi.html">Kārtridži</a>
+            <a href="periferija.html">Perifērija un aksesuāri</a>
+            <a href="komponentes.html">Komponentes</a>
+          </div>
+        </div>
         <a href="#kontakti">Kontakti</a>
       </nav>
 
@@ -128,29 +144,33 @@
         </div>
 
         <div class="cards">
-          <article class="card">
+          <a class="card" href="lietoti-datori.html">
             <div class="card__icon" aria-hidden="true">💻</div>
             <h3 class="card__title">Lietoti datori</h3>
             <p class="card__text">Pārbaudīti lietoti portatīvie un stacionārie datori.</p>
-          </article>
+            <span class="card__link">Skatīt piedāvājumus &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="apple.html">
             <div class="card__icon" aria-hidden="true">🍏</div>
             <h3 class="card__title">Lietota Apple tehnika</h3>
             <p class="card__text">Lietota Apple tehnika par pieejamu cenu.</p>
-          </article>
+            <span class="card__link">Skatīt piedāvājumus &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="jauni-datori.html">
             <div class="card__icon" aria-hidden="true">🖥️</div>
             <h3 class="card__title">Jauni datori</h3>
             <p class="card__text">Jauni datori, komplektēti pēc klientu vēlmes.</p>
-          </article>
+            <span class="card__link">Skatīt piedāvājumus &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="lietoti-komponenti.html">
             <div class="card__icon" aria-hidden="true">🧩</div>
             <h3 class="card__title">Lietoti datoru komponenti</h3>
             <p class="card__text">Datoru komponentes un rezerves daļas.</p>
-          </article>
+            <span class="card__link">Skatīt piedāvājumus &rarr;</span>
+          </a>
         </div>
       </div>
     </section>
@@ -167,31 +187,35 @@
         </div>
 
         <div class="cards">
-          <article class="card">
+          <a class="card" href="remonts.html">
             <div class="card__icon" aria-hidden="true">🔧</div>
             <h3 class="card__title">Datoru remonts</h3>
             <p class="card__text">
               Stacionāro, portatīvo un planšetdatoru remonts. Bezmaksas diagnostika.
             </p>
-          </article>
+            <span class="card__link">Uzzināt vairāk &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="kartridzi.html">
             <div class="card__icon" aria-hidden="true">🖨️</div>
             <h3 class="card__title">Kārtridži</h3>
             <p class="card__text">Tintes kārtridži un lāzerkasetes.</p>
-          </article>
+            <span class="card__link">Uzzināt vairāk &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="periferija.html">
             <div class="card__icon" aria-hidden="true">⌨️</div>
             <h3 class="card__title">Perifērija un aksesuāri</h3>
             <p class="card__text">Perifērija, tīkla produkti un aksesuāri.</p>
-          </article>
+            <span class="card__link">Uzzināt vairāk &rarr;</span>
+          </a>
 
-          <article class="card">
+          <a class="card" href="komponentes.html">
             <div class="card__icon" aria-hidden="true">🧩</div>
             <h3 class="card__title">Komponentes</h3>
             <p class="card__text">Datoru komponentes jaunu konfigurāciju izveidei.</p>
-          </article>
+            <span class="card__link">Uzzināt vairāk &rarr;</span>
+          </a>
 
           <article class="card">
             <div class="card__icon" aria-hidden="true">📄</div>
@@ -282,6 +306,12 @@
       nav.classList.toggle('is-open');
       toggle.classList.toggle('is-active');
     });
+    // Dropdown izvēlnes mobilajā
+    document.querySelectorAll('.nav__droptoggle').forEach(b =>
+      b.addEventListener('click', e => {
+        if (window.innerWidth <= 880) { e.preventDefault(); b.parentElement.classList.toggle('is-open'); }
+      })
+    );
     // Aizvērt izvēlni pēc klikšķa uz saites
     nav.querySelectorAll('a').forEach(a =>
       a.addEventListener('click', () => {
