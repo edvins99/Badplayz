@@ -395,58 +395,53 @@
       });
     })();
 
-    // ===== Cyberpunk city + lightning =====
+    // ===== Cyberpunk city :: SHOCK MODE =====
     (function () {
       const cv = document.getElementById('city');
       const flash = document.getElementById('cityFlash');
+      const heroEl = document.querySelector('.hero');
       if (!cv) return;
       const ctx = cv.getContext('2d');
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      let W, H, dpr, layers, rain, bolt = null, flashA = 0, t = 0;
+      let W, H, dpr, horizon, layers, rain, stars, cars, bolt = null, flashA = 0, shake = 0, t = 0;
 
       const NEON = ['#00f0ff', '#ff2bd6', '#9b5cff', '#ffe24a', '#4dffa6'];
+      const rnd = (a, b) => a + Math.random() * (b - a);
 
-      function rnd(a, b) { return a + Math.random() * (b - a); }
-
-      function buildLayer(depth, count, hMin, hMax, shade, neonChance) {
-        const arr = [];
-        let x = -20;
+      function buildLayer(depth, hMin, hMax, shade, neonChance) {
+        const arr = []; let x = -20;
         while (x < W + 20) {
-          const bw = rnd(34, 90) * (1 + depth * 0.4);
-          const bh = rnd(hMin, hMax) * H;
+          const bw = rnd(34, 88) * (1 + depth * 0.4);
+          const bh = rnd(hMin, hMax) * horizon;
           const b = { x, w: bw, h: bh, shade, depth, windows: [] };
-          // window grid
           const cols = Math.max(1, Math.floor(bw / 14));
           const rows = Math.max(2, Math.floor(bh / 16));
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-              if (Math.random() < neonChance) {
-                b.windows.push({
-                  wx: 6 + c * 14, wy: 10 + r * 16,
-                  col: NEON[(Math.random() * NEON.length) | 0],
-                  on: Math.random() > 0.4,
-                  ph: Math.random() * Math.PI * 2
-                });
-              }
-            }
-          }
-          // occasional rooftop neon sign
-          b.sign = Math.random() < 0.18 ? NEON[(Math.random() * NEON.length) | 0] : null;
-          arr.push(b);
-          x += bw + rnd(4, 16);
+          for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++)
+              if (Math.random() < neonChance)
+                b.windows.push({ wx: 6 + c * 14, wy: 10 + r * 16, col: NEON[(Math.random() * NEON.length) | 0], on: Math.random() > 0.4, ph: Math.random() * 6.28 });
+          b.sign = Math.random() < 0.20 ? NEON[(Math.random() * NEON.length) | 0] : null;
+          arr.push(b); x += bw + rnd(4, 14);
         }
         return arr;
       }
 
       function build() {
+        horizon = H * 0.72;
         layers = [
-          buildLayer(0, 0, 0.18, 0.34, '#0a0a18', 0.10), // far
-          buildLayer(0.5, 0, 0.26, 0.5, '#0d0d22', 0.16), // mid
-          buildLayer(1, 0, 0.34, 0.62, '#101030', 0.22)  // near
+          buildLayer(0, 0.20, 0.42, '#0a0a18', 0.10),
+          buildLayer(0.5, 0.30, 0.66, '#0d0d24', 0.16),
+          buildLayer(1, 0.42, 0.90, '#111034', 0.22)
         ];
-        rain = [];
-        const n = reduce ? 0 : 140;
-        for (let i = 0; i < n; i++) rain.push({ x: Math.random() * W, y: Math.random() * H, l: rnd(8, 18), s: rnd(6, 12) });
+        rain = []; stars = []; cars = [];
+        if (!reduce) {
+          for (let i = 0; i < 150; i++) rain.push({ x: Math.random() * W, y: Math.random() * H, l: rnd(8, 18), s: rnd(7, 13) });
+          for (let i = 0; i < 70; i++) stars.push({ x: Math.random() * W, y: Math.random() * horizon * 0.85, r: rnd(0.4, 1.4), ph: Math.random() * 6.28 });
+          for (let i = 0; i < 7; i++) {
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            cars.push({ x: Math.random() * W, y: rnd(H * 0.10, horizon * 0.7), s: rnd(0.9, 2.4) * dir, col: NEON[(Math.random() * 3) | 0], trail: [] });
+          }
+        }
       }
 
       function resize() {
@@ -459,102 +454,174 @@
       }
 
       function lightning() {
-        // build a jagged bolt
-        const x0 = rnd(W * 0.15, W * 0.85);
-        const seg = [{ x: x0, y: 0 }];
-        let x = x0, y = 0;
-        const targetY = rnd(H * 0.4, H * 0.7);
-        while (y < targetY) {
-          y += rnd(18, 40);
-          x += rnd(-32, 32);
-          seg.push({ x, y });
-        }
+        const x0 = rnd(W * 0.12, W * 0.88);
+        const seg = [{ x: x0, y: 0 }]; let x = x0, y = 0;
+        const targetY = rnd(horizon * 0.5, horizon);
+        while (y < targetY) { y += rnd(16, 38); x += rnd(-34, 34); seg.push({ x, y }); }
         bolt = { seg, life: 1, branches: [] };
-        // branches
-        for (let i = 1; i < seg.length - 1; i++) {
-          if (Math.random() < 0.35) {
-            const s = seg[i];
-            bolt.branches.push([{ x: s.x, y: s.y }, { x: s.x + rnd(-50, 50), y: s.y + rnd(20, 60) }]);
-          }
-        }
-        flashA = 0.9;
-        if (flash) { flash.style.opacity = '0.85'; setTimeout(() => flash.style.opacity = '0', 90);
-          setTimeout(() => { flash.style.opacity = '0.5'; setTimeout(() => flash.style.opacity = '0', 70); }, 140); }
+        for (let i = 1; i < seg.length - 1; i++)
+          if (Math.random() < 0.4) { const s = seg[i]; bolt.branches.push([{ x: s.x, y: s.y }, { x: s.x + rnd(-55, 55), y: s.y + rnd(20, 70) }]); }
+        flashA = 1; shake = 10;
+        if (flash) { flash.style.opacity = '0.9'; setTimeout(() => flash.style.opacity = '0', 80);
+          setTimeout(() => { flash.style.opacity = '0.55'; setTimeout(() => flash.style.opacity = '0', 60); }, 130); }
       }
 
       function drawBolt() {
         if (!bolt) return;
         ctx.save();
-        ctx.strokeStyle = `rgba(180,240,255,${bolt.life})`;
-        ctx.lineWidth = 2.2; ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 18;
+        ctx.strokeStyle = `rgba(190,245,255,${bolt.life})`;
+        ctx.lineWidth = 2.4; ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 22; ctx.lineJoin = 'round';
         ctx.beginPath(); ctx.moveTo(bolt.seg[0].x, bolt.seg[0].y);
-        bolt.seg.forEach(p => ctx.lineTo(p.x, p.y));
-        ctx.stroke();
+        bolt.seg.forEach(p => ctx.lineTo(p.x, p.y)); ctx.stroke();
         bolt.branches.forEach(br => { ctx.beginPath(); ctx.moveTo(br[0].x, br[0].y); ctx.lineTo(br[1].x, br[1].y); ctx.stroke(); });
         ctx.restore();
-        bolt.life -= 0.06;
-        if (bolt.life <= 0) bolt = null;
+        bolt.life -= 0.055; if (bolt.life <= 0) bolt = null;
+      }
+
+      function drawMoon() {
+        const mx = W * 0.78, my = horizon * 0.34, r = Math.min(W, H) * 0.12;
+        let glow = ctx.createRadialGradient(mx, my, r * 0.2, mx, my, r * 2.6);
+        glow.addColorStop(0, 'rgba(255,120,200,0.45)'); glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(mx, my, r * 2.6, 0, 6.3); ctx.fill();
+        let disc = ctx.createLinearGradient(mx, my - r, mx, my + r);
+        disc.addColorStop(0, '#ff9ad6'); disc.addColorStop(0.5, '#c45cff'); disc.addColorStop(1, '#6a2cd6');
+        ctx.fillStyle = disc; ctx.beginPath(); ctx.arc(mx, my, r, 0, 6.3); ctx.fill();
+        ctx.save(); ctx.beginPath(); ctx.arc(mx, my, r, 0, 6.3); ctx.clip();
+        ctx.fillStyle = '#0d0a22';
+        for (let i = 0; i < 6; i++) { const yy = my + r * 0.15 + i * (r * 0.17); ctx.fillRect(mx - r, yy, r * 2, r * 0.05 + i * 0.6); }
+        ctx.restore();
+      }
+
+      function drawStars() {
+        stars.forEach(s => {
+          const tw = 0.4 + 0.6 * Math.abs(Math.sin(t * 1.5 + s.ph));
+          ctx.fillStyle = `rgba(200,230,255,${tw})`;
+          ctx.fillRect(s.x, s.y, s.r, s.r);
+        });
+      }
+
+      function drawSearchlights() {
+        const beams = [{ x: W * 0.22, ph: 0 }, { x: W * 0.55, ph: 2.1 }, { x: W * 0.86, ph: 4.0 }];
+        beams.forEach(bm => {
+          const ang = -1.57 + Math.sin(t * 0.5 + bm.ph) * 0.55;
+          const len = H * 0.95;
+          const ex = bm.x + Math.cos(ang) * len, ey = horizon + Math.sin(ang) * len;
+          const grd = ctx.createLinearGradient(bm.x, horizon, ex, ey);
+          grd.addColorStop(0, 'rgba(0,240,255,0.16)'); grd.addColorStop(1, 'transparent');
+          ctx.fillStyle = grd;
+          ctx.beginPath(); ctx.moveTo(bm.x, horizon); ctx.lineTo(ex - 26, ey); ctx.lineTo(ex + 26, ey); ctx.closePath(); ctx.fill();
+        });
+      }
+
+      function drawCars() {
+        cars.forEach(c => {
+          c.trail.push({ x: c.x, y: c.y });
+          if (c.trail.length > 14) c.trail.shift();
+          ctx.strokeStyle = c.col; ctx.lineWidth = 1.6; ctx.globalAlpha = 0.5; ctx.shadowColor = c.col; ctx.shadowBlur = 8;
+          ctx.beginPath();
+          c.trail.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+          ctx.stroke();
+          ctx.globalAlpha = 1; ctx.fillStyle = '#fff';
+          ctx.beginPath(); ctx.arc(c.x, c.y, 1.6, 0, 6.3); ctx.fill();
+          ctx.shadowBlur = 0;
+          c.x += c.s;
+          if (c.x > W + 30) { c.x = -30; c.trail = []; }
+          if (c.x < -30) { c.x = W + 30; c.trail = []; }
+        });
+      }
+
+      function drawGridFloor() {
+        const vanish = W / 2;
+        // vertical converging lines
+        ctx.strokeStyle = 'rgba(255,43,214,0.30)'; ctx.lineWidth = 1;
+        const verts = 18;
+        for (let i = -verts; i <= verts; i++) {
+          ctx.beginPath();
+          ctx.moveTo(vanish + i * 6, horizon);
+          ctx.lineTo(vanish + i * (W / verts) * 1.1, H);
+          ctx.stroke();
+        }
+        // horizontal moving lines (perspective)
+        const lines = 16, scroll = (t * 0.35) % 1;
+        for (let j = 0; j < lines; j++) {
+          let p = (j + scroll) / lines; p = p * p;
+          const y = horizon + p * (H - horizon);
+          ctx.globalAlpha = 0.12 + 0.5 * p;
+          ctx.strokeStyle = 'rgba(0,240,255,0.55)';
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
       }
 
       function frame() {
         t += 0.016;
+        if (shake > 0) shake *= 0.82;
+        const sx = shake > 0.4 ? rnd(-shake, shake) : 0;
+        const sy = shake > 0.4 ? rnd(-shake, shake) : 0;
+        ctx.setTransform(dpr, 0, 0, dpr, sx * dpr, sy * dpr);
+
         // sky
         const g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, '#0a0618'); g.addColorStop(0.55, '#0d0a22'); g.addColorStop(1, '#160a2e');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        g.addColorStop(0, '#0a0618'); g.addColorStop(0.5, '#0d0a22'); g.addColorStop(1, '#1a0a32');
+        ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
 
-        // flash brighten
-        if (flashA > 0) { ctx.fillStyle = `rgba(120,90,200,${flashA * 0.5})`; ctx.fillRect(0, 0, W, H); flashA -= 0.04; }
+        drawStars();
+        drawMoon();
+
+        if (flashA > 0) { ctx.fillStyle = `rgba(150,120,230,${flashA * 0.45})`; ctx.fillRect(-20, -20, W + 40, H + 40); flashA -= 0.05; }
+
+        drawSearchlights();
+        drawCars();
 
         // horizon glow
-        const hg = ctx.createRadialGradient(W / 2, H, 10, W / 2, H, H * 0.8);
-        hg.addColorStop(0, 'rgba(255,43,214,0.18)'); hg.addColorStop(1, 'transparent');
+        const hg = ctx.createRadialGradient(W / 2, horizon, 10, W / 2, horizon, H * 0.6);
+        hg.addColorStop(0, 'rgba(255,43,214,0.22)'); hg.addColorStop(1, 'transparent');
         ctx.fillStyle = hg; ctx.fillRect(0, 0, W, H);
 
-        // buildings (far -> near)
+        // buildings far -> near
         layers.forEach((layer, li) => {
           layer.forEach(b => {
-            const top = H - b.h;
+            const top = horizon - b.h;
             ctx.fillStyle = b.shade;
             ctx.fillRect(b.x, top, b.w, b.h);
-            // outline glow on near layer
-            if (li === 2) { ctx.strokeStyle = 'rgba(0,240,255,0.10)'; ctx.lineWidth = 1; ctx.strokeRect(b.x + .5, top + .5, b.w - 1, b.h - 1); }
-            // windows
+            if (li === 2) { ctx.strokeStyle = 'rgba(0,240,255,0.12)'; ctx.lineWidth = 1; ctx.strokeRect(b.x + .5, top + .5, b.w - 1, b.h - 1); }
             b.windows.forEach(wn => {
-              const flick = (Math.sin(t * 2 + wn.ph) > 0.2);
-              if (wn.on && flick) {
-                ctx.fillStyle = wn.col;
-                ctx.globalAlpha = 0.85 * (0.5 + 0.5 * li / 2);
+              if (wn.on && Math.sin(t * 2 + wn.ph) > 0.2) {
+                ctx.fillStyle = wn.col; ctx.globalAlpha = 0.85 * (0.5 + 0.5 * li / 2);
                 ctx.shadowColor = wn.col; ctx.shadowBlur = 6;
                 ctx.fillRect(b.x + wn.wx, top + wn.wy, 4, 6);
                 ctx.shadowBlur = 0; ctx.globalAlpha = 1;
               }
             });
-            // neon sign
             if (b.sign) {
               ctx.fillStyle = b.sign; ctx.globalAlpha = 0.7 + 0.3 * Math.sin(t * 4 + b.x);
-              ctx.shadowColor = b.sign; ctx.shadowBlur = 12;
-              ctx.fillRect(b.x + b.w * 0.35, top - 14, 4, 14);
+              ctx.shadowColor = b.sign; ctx.shadowBlur = 14;
+              ctx.fillRect(b.x + b.w * 0.35, top - 16, 4, 16);
               ctx.shadowBlur = 0; ctx.globalAlpha = 1;
             }
           });
         });
 
+        // wet-street reflection band
+        const refl = ctx.createLinearGradient(0, horizon, 0, H);
+        refl.addColorStop(0, 'rgba(0,240,255,0.10)');
+        refl.addColorStop(0.4, 'rgba(255,43,214,0.06)');
+        refl.addColorStop(1, 'transparent');
+        ctx.fillStyle = refl; ctx.fillRect(0, horizon, W, H - horizon);
+
+        drawGridFloor();
+
         // rain
         if (rain.length) {
-          ctx.strokeStyle = 'rgba(120,200,255,0.18)'; ctx.lineWidth = 1;
-          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(120,200,255,0.20)'; ctx.lineWidth = 1; ctx.beginPath();
           rain.forEach(d => {
             ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 2, d.y + d.l);
-            d.y += d.s; d.x -= 0.6;
-            if (d.y > H) { d.y = -10; d.x = Math.random() * W; }
+            d.y += d.s; d.x -= 0.7; if (d.y > H) { d.y = -10; d.x = Math.random() * W; }
           });
           ctx.stroke();
         }
 
-        // lightning bolt
         drawBolt();
-
         requestAnimationFrame(frame);
       }
 
@@ -562,14 +629,18 @@
       window.addEventListener('resize', resize);
       if (!reduce) {
         frame();
-        (function strike() {
-          lightning();
-          setTimeout(strike, rnd(2600, 6000));
-        })();
-        setTimeout(lightning, 900);
+        (function strike() { lightning(); setTimeout(strike, rnd(2400, 5600)); })();
+        setTimeout(lightning, 800);
       } else {
-        // static single frame
-        frame.length; t = 1; (function once(){ const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a0618'); g.addColorStop(1,'#160a2e'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); layers.forEach((layer,li)=>layer.forEach(b=>{const top=H-b.h; ctx.fillStyle=b.shade; ctx.fillRect(b.x,top,b.w,b.h); b.windows.forEach(wn=>{if(wn.on){ctx.fillStyle=wn.col; ctx.fillRect(b.x+wn.wx, top+wn.wy,4,6);}});})); })();
+        // static frame for reduced-motion
+        t = 1;
+        const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0a0618'); g.addColorStop(1, '#1a0a32');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        drawMoon();
+        layers.forEach(layer => layer.forEach(b => {
+          const top = horizon - b.h; ctx.fillStyle = b.shade; ctx.fillRect(b.x, top, b.w, b.h);
+          b.windows.forEach(wn => { if (wn.on) { ctx.fillStyle = wn.col; ctx.fillRect(b.x + wn.wx, top + wn.wy, 4, 6); } });
+        }));
       }
     })();
   </script>
