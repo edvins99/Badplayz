@@ -243,22 +243,34 @@
       </div>
     </section>
 
-    <!-- CITY SCENES (animated cyberpunk landscapes) -->
+    <!-- CITY LIFE (real cyberpunk photography) -->
     <section id="scenes" class="section reveal">
-      <h2 class="section__title">// city scenes</h2>
-      <p class="transmissions__intro">live cyberpunk landscapes — rendered in real time</p>
+      <h2 class="section__title">// city life</h2>
+      <p class="transmissions__intro">scenes from the neon underground</p>
       <div class="scenes">
         <figure class="scene">
-          <canvas class="scene__cv" data-scene="neon"></canvas>
-          <figcaption class="scene__cap"><span>NEON DISTRICT</span><span class="scene__sub">sector_01</span></figcaption>
+          <img class="scene__img" src="https://images.unsplash.com/photo-1545128485-c400e7702b3c?w=640&q=80&auto=format" alt="Neon city street at night" loading="lazy" />
+          <figcaption class="scene__cap"><span>NEON ALLEY</span><span class="scene__sub">sector_01</span></figcaption>
         </figure>
         <figure class="scene">
-          <canvas class="scene__cv" data-scene="sunset"></canvas>
-          <figcaption class="scene__cap"><span>SUNSET SECTOR</span><span class="scene__sub">sector_02</span></figcaption>
+          <img class="scene__img" src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=640&q=80&auto=format" alt="Person in neon lights cyberpunk style" loading="lazy" />
+          <figcaption class="scene__cap"><span>NEON GIRL</span><span class="scene__sub">sector_02</span></figcaption>
         </figure>
         <figure class="scene">
-          <canvas class="scene__cv" data-scene="highway"></canvas>
-          <figcaption class="scene__cap"><span>DATA HIGHWAY</span><span class="scene__sub">sector_03</span></figcaption>
+          <img class="scene__img" src="https://images.unsplash.com/photo-1563089145-599997674d42?w=640&q=80&auto=format" alt="Cyberpunk neon lights on wet street" loading="lazy" />
+          <figcaption class="scene__cap"><span>WET NEON</span><span class="scene__sub">sector_03</span></figcaption>
+        </figure>
+        <figure class="scene">
+          <img class="scene__img" src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=640&q=80&auto=format" alt="Tokyo neon signs at night cyberpunk" loading="lazy" />
+          <figcaption class="scene__cap"><span>TOKYO DRIFT</span><span class="scene__sub">sector_04</span></figcaption>
+        </figure>
+        <figure class="scene">
+          <img class="scene__img" src="https://images.unsplash.com/photo-1504903271097-d7e7c7f5f7ad?w=640&q=80&auto=format" alt="Person walking under neon lights rain" loading="lazy" />
+          <figcaption class="scene__cap"><span>RAIN WALKER</span><span class="scene__sub">sector_05</span></figcaption>
+        </figure>
+        <figure class="scene">
+          <img class="scene__img" src="https://images.unsplash.com/photo-1493606278519-11aa9f86e40a?w=640&q=80&auto=format" alt="Futuristic city skyline at night" loading="lazy" />
+          <figcaption class="scene__cap"><span>SKYLINE</span><span class="scene__sub">sector_06</span></figcaption>
         </figure>
       </div>
     </section>
@@ -634,88 +646,8 @@
       }
     })();
 
-    // ===== Mini city-scene gallery (bottom landscapes) =====
-    (function () {
-      const canvases = Array.prototype.slice.call(document.querySelectorAll('.scene__cv'));
-      if (!canvases.length) return;
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const rnd = (a, b) => a + Math.random() * (b - a);
-      const PAL = {
-        neon:    { sky: ['#06121f', '#0a2030'], sun: '#00f0ff', b: '#071420', win: ['#00f0ff', '#4dffa6', '#ffffff'], grid: 'rgba(0,240,255,0.3)' },
-        sunset:  { sky: ['#2a0a2e', '#10081f'], sun: '#ff5fae', b: '#1a0820', win: ['#ff2bd6', '#ffe24a', '#ff9ad6'], grid: 'rgba(255,43,214,0.3)' },
-        highway: { sky: ['#0a0820', '#150a30'], sun: '#9b5cff', b: '#0c0a22', win: ['#9b5cff', '#00f0ff', '#ffffff'], grid: 'rgba(155,92,255,0.3)' }
-      };
-
-      const insts = canvases.map(cv => {
-        const ctx = cv.getContext('2d');
-        const pal = PAL[cv.dataset.scene] || PAL.neon;
-        let W, H, dpr, bld, cars, t = Math.random() * 10, vis = true;
-
-        function build() {
-          dpr = Math.min(window.devicePixelRatio || 1, 2);
-          const r = cv.getBoundingClientRect();
-          W = r.width || 320; H = r.height || 220;
-          cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          const hz = H * 0.78; bld = []; let x = -10;
-          while (x < W + 10) {
-            const bw = rnd(20, 52), bh = rnd(0.25, 0.78) * hz;
-            const o = { x, w: bw, h: bh, win: [] };
-            const cols = Math.max(1, (bw / 12) | 0), rows = Math.max(2, (bh / 14) | 0);
-            for (let i = 0; i < cols * rows; i++)
-              if (Math.random() < 0.32) o.win.push({ wx: 5 + (i % cols) * 12, wy: 8 + ((i / cols) | 0) * 14, c: pal.win[(Math.random() * pal.win.length) | 0], ph: Math.random() * 6.3 });
-            bld.push(o); x += bw + rnd(3, 10);
-          }
-          cars = cv.dataset.scene === 'highway'
-            ? Array.from({ length: 5 }, () => ({ x: Math.random() * W, y: rnd(H * 0.15, H * 0.55), s: rnd(0.6, 1.8) * (Math.random() > .5 ? 1 : -1), c: pal.win[(Math.random() * pal.win.length) | 0], tr: [] }))
-            : [];
-        }
-
-        function frame() {
-          const hz = H * 0.78;
-          const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, pal.sky[0]); g.addColorStop(1, pal.sky[1]);
-          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-          // sun/moon
-          const sx = W * 0.72, sy = hz * 0.45, r = Math.min(W, H) * 0.16;
-          let gg = ctx.createRadialGradient(sx, sy, 2, sx, sy, r * 2.2); gg.addColorStop(0, pal.sun); gg.addColorStop(1, 'transparent');
-          ctx.globalAlpha = .45; ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(sx, sy, r * 2.2, 0, 6.3); ctx.fill(); ctx.globalAlpha = 1;
-          ctx.fillStyle = pal.sun; ctx.beginPath(); ctx.arc(sx, sy, r, 0, 6.3); ctx.fill();
-          // cars
-          cars.forEach(c => {
-            c.tr.push({ x: c.x, y: c.y }); if (c.tr.length > 10) c.tr.shift();
-            ctx.strokeStyle = c.c; ctx.globalAlpha = .5; ctx.lineWidth = 1.4;
-            ctx.beginPath(); c.tr.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.globalAlpha = 1;
-            c.x += c.s; if (c.x > W + 20) { c.x = -20; c.tr = []; } if (c.x < -20) { c.x = W + 20; c.tr = []; }
-          });
-          // buildings
-          bld.forEach(b => {
-            const top = hz - b.h; ctx.fillStyle = pal.b; ctx.fillRect(b.x, top, b.w, b.h);
-            b.win.forEach(wn => { if (Math.sin(t * 2 + wn.ph) > 0.1) { ctx.fillStyle = wn.c; ctx.globalAlpha = .85; ctx.fillRect(b.x + wn.wx, top + wn.wy, 3, 5); ctx.globalAlpha = 1; } });
-          });
-          // grid floor
-          for (let j = 0; j < 8; j++) { let p = (j + (t * 0.3 % 1)) / 8; p = p * p; const y = hz + p * (H - hz); ctx.globalAlpha = .1 + .5 * p; ctx.strokeStyle = 'rgba(0,240,255,0.5)'; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-          const vanish = W / 2; ctx.strokeStyle = pal.grid; ctx.globalAlpha = .5;
-          for (let i = -8; i <= 8; i++) { ctx.beginPath(); ctx.moveTo(vanish + i * 4, hz); ctx.lineTo(vanish + i * (W / 8), H); ctx.stroke(); }
-          ctx.globalAlpha = 1;
-        }
-
-        return { cv, build, frame, tick: () => { t += 0.02; }, setVis: v => vis = v, get vis() { return vis; } };
-      });
-
-      insts.forEach(i => i.build());
-      window.addEventListener('resize', () => insts.forEach(i => i.build()));
-
-      const io = new IntersectionObserver(es => es.forEach(e => {
-        const inst = insts.find(i => i.cv === e.target); if (inst) inst.setVis(e.isIntersecting);
-      }), { threshold: 0.05 });
-      insts.forEach(i => io.observe(i.cv));
-
-      if (reduce) { insts.forEach(i => i.frame()); return; }
-      let last = 0;
-      (function loop(ts) {
-        if (ts - last > 45) { insts.forEach(i => { if (i.vis) { i.tick(); i.frame(); } }); last = ts; }
-        requestAnimationFrame(loop);
-      })(0);
-    })();
+    // (city scene gallery now uses photos — no JS needed)
+  
   </script>
 
   <!-- X (Twitter) embed widgets -->

@@ -351,13 +351,15 @@ main { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
    CITY SCENES (animated landscape gallery)
    ============================================ */
 
-.scenes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.scenes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
 .scene {
   position: relative; overflow: hidden; border: 1px solid var(--border); background: #06060f;
   transition: transform .15s ease, box-shadow .25s ease, border-color .25s ease;
   clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
 }
 .scene:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0, 240, 255, 0.22); border-color: var(--cyan); }
+.scene__img { display: block; width: 100%; height: 260px; object-fit: cover; filter: saturate(1.2) brightness(0.85); transition: filter .3s, transform .4s; }
+.scene:hover .scene__img { filter: saturate(1.5) brightness(1); transform: scale(1.04); }
 .scene__cv { display: block; width: 100%; height: 230px; }
 .scene__cap {
   position: absolute; left: 0; right: 0; bottom: 0;
