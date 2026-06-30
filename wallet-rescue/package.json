@@ -1,0 +1,15 @@
+{
+  "name": "wallet-rescue",
+  "version": "1.0.0",
+  "description": "Atomara (Flashbots bundle) lidzeklu glabsana no uzlauzta (drained) maka uz Ethereum mainnet",
+  "type": "commonjs",
+  "scripts": {
+    "rescue": "node recover.js",
+    "simulate": "DRY_RUN=1 node recover.js"
+  },
+  "dependencies": {
+    "@flashbots/ethers-provider-bundle": "^0.6.2",
+    "dotenv": "^16.4.5",
+    "ethers": "^5.7.2"
+  }
+}
