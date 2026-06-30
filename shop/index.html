@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BADPLAYZ // Crypto Tees</title>
+  <meta name="description" content="Crypto-themed T-shirts. Wear the chain. Bitcoin, Ethereum, Solana, HODL and more." />
+  <meta property="og:title" content="BADPLAYZ // Crypto Tees" />
+  <meta property="og:description" content="Crypto-themed T-shirts. Wear the chain." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- animated background -->
+  <div class="bg-grid"></div>
+  <div class="bg-orbs"><span></span><span></span><span></span></div>
+  <div class="bg-scan"></div>
+
+  <!-- header -->
+  <header class="nav">
+    <a href="#" class="nav__brand">
+      <span class="nav__dot"></span>
+      <span id="brandText">BADPLAYZ // CRYPTO TEES</span>
+    </a>
+    <nav class="nav__links">
+      <a href="#shop">[shop]</a>
+      <a href="#lookbook">[lookbook]</a>
+      <a href="#about">[about]</a>
+      <a href="../" >[back]</a>
+    </nav>
+    <button class="cart-btn" id="cartBtn" aria-label="cart">
+      <span class="cart-btn__icon">🛒</span>
+      <span class="cart-btn__count" id="cartCount">0</span>
+    </button>
+  </header>
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="hero__inner">
+      <p class="hero__kicker"><span class="blink">▮</span> drop_01 // now live</p>
+      <h1 class="hero__title" data-text="WEAR THE CHAIN">WEAR THE CHAIN</h1>
+      <p class="hero__sub">premium crypto-themed tees. minted for holders, degens & believers.</p>
+      <div class="hero__cta">
+        <a href="#shop" class="btn btn--primary">browse drop &rarr;</a>
+        <a href="#about" class="btn btn--ghost">how it works</a>
+      </div>
+      <div class="hero__ship" id="shipNote">◆ free shipping over €50</div>
+    </div>
+    <div class="hero__scroll">scroll ▾</div>
+  </section>
+
+  <!-- marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track" id="marqueeTrack"></div>
+  </div>
+
+  <!-- shop -->
+  <section id="shop" class="shop">
+    <h2 class="section__title">// the drop</h2>
+    <p class="section__sub">tap a tee to add it to your bag</p>
+    <div class="grid" id="productGrid"><!-- products injected by app.js --></div>
+  </section>
+
+  <!-- lookbook -->
+  <section id="lookbook" class="lookbook">
+    <h2 class="section__title">// lookbook</h2>
+    <p class="section__sub">on the streets — wear it loud</p>
+    <div class="lookbook__grid">
+      <figure class="look look--tall">
+        <img src="assets/models/model_01.jpg" alt="Model wearing crypto tee" loading="lazy" />
+        <figcaption><span>STREET DROP</span><span class="look__sub">look_01</span></figcaption>
+      </figure>
+      <figure class="look">
+        <img src="assets/models/model_02.jpg" alt="Model streetwear crypto style" loading="lazy" />
+        <figcaption><span>CITY FIT</span><span class="look__sub">look_02</span></figcaption>
+      </figure>
+      <figure class="look">
+        <img src="assets/models/model_03.jpg" alt="Model lifestyle crypto apparel" loading="lazy" />
+        <figcaption><span>OFF DUTY</span><span class="look__sub">look_03</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- about -->
+  <section id="about" class="about">
+    <h2 class="section__title">// how it works</h2>
+    <div class="steps">
+      <div class="step"><span class="step__num">01</span><h3>pick your tee</h3><p>choose your favourite crypto design from the drop.</p></div>
+      <div class="step"><span class="step__num">02</span><h3>add to bag</h3><p>tap add — your bag lives in your browser, no account needed.</p></div>
+      <div class="step"><span class="step__num">03</span><h3>checkout</h3><p>hit checkout and we handle print + worldwide shipping.</p></div>
+    </div>
+  </section>
+
+  <!-- cart drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer__head">
+      <h3>your bag</h3>
+      <button class="drawer__close" id="drawerClose">✕</button>
+    </div>
+    <div class="drawer__items" id="drawerItems"></div>
+    <div class="drawer__foot">
+      <div class="drawer__total"><span>total</span><span id="cartTotal">€0.00</span></div>
+      <button class="btn btn--primary btn--full" id="checkoutBtn">checkout &rarr;</button>
+      <p class="drawer__note">secure checkout • worldwide shipping</p>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <span>// badplayz crypto tees</span>
+    <span>built with vibes &amp; coffee</span>
+    <span id="year"></span>
+  </footer>
+
+  <!-- toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
