@@ -2,7 +2,9 @@
 
 Vienkārša programma: **nospied taustiņu → sākas ekrāna ieraksts. Nospied vēlreiz → apstājas un saglabā MP4.**
 
-- **F9** = sākt / apturēt ierakstu
+- **F9** = sākt / apturēt ierakstu (un saglabāt)
+- **F8** = pauze / turpināt
+- **F7** = izvēlēties ekrāna apgabalu (ar peli) — kad neraksta
 - **F10** = iziet
 
 Strādā uz **Windows / macOS / Linux**.
@@ -52,14 +54,38 @@ Faili tiek saglabāti šeit:
 
 ```python
 HOTKEY_TOGGLE = "f9"     # taustiņš sākt/apturēt
+HOTKEY_PAUSE  = "f8"     # taustiņš pauze/turpināt
+HOTKEY_REGION = "f7"     # taustiņš apgabala izvēle
 HOTKEY_QUIT   = "f10"    # taustiņš iziet
 FPS           = 30       # kadri sekundē
 RECORD_AUDIO  = False    # True = ieraksta arī skaņu
 AUDIO_DEVICE  = ""       # skaņas ierīces nosaukums (skat. zemāk)
+REGION        = None     # None = viss ekrāns; (x,y,w,h) = apgabals
 CRF           = 23       # kvalitāte (mazāks = labāks, lielāks fails)
 ```
 
 Vari nomainīt taustiņus uz jebkuriem, piem. `"ctrl+shift+r"`.
+
+---
+
+## ⏸️ Pauze (F8)
+
+Ieraksta laikā nospied **F8**, lai pauzētu, un vēlreiz **F8**, lai turpinātu.
+Programma ieraksta atsevišķās daļās un beigās tās automātiski apvieno vienā MP4 failā — tāpēc pauzes neredzēsies gatavajā video.
+
+## ▭ Apgabala izvēle (F7)
+
+Kad **neraksti**, nospied **F7**:
+- Ekrāns kļūst puscaurspīdīgs
+- **Velc peli**, lai atzīmētu taisnstūri (ierakstīs tikai to daļu)
+- **ENTER** = viss ekrāns • **ESC** = atcelt
+
+Vai iestati manuāli `recorder.py`:
+```python
+REGION = (100, 100, 1280, 720)   # x, y, platums, augstums
+REGION = None                    # viss ekrāns
+```
+> macOS apgabalu ieraksta caur `crop` filtru — strādā, bet nedaudz lēnāk.
 
 ---
 
