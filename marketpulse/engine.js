@@ -66,6 +66,7 @@ export class ScannerEngine extends EventEmitter{
       const pendingByMarket=new Map();for(const signal of this.store.pending()){const key=signal.marketId+'|'+signal.timeframe;if(!pendingByMarket.has(key))pendingByMarket.set(key,[]);pendingByMarket.get(key).push(signal);}
       let publishedAt=Date.now();
       for(let i=0;i<selected.length;i+=3){
+        if(revision!==this.revision)return;
         await Promise.all(selected.slice(i,i+3).map(async m=>{
           try{
             await this.store.prepareCandles(m.id,settings.timeframe);const a=this.adapter(m.source),stored=this.store.candles(m.id,settings.timeframe,5000);
@@ -87,6 +88,7 @@ export class ScannerEngine extends EventEmitter{
         }));
         if(i%12===0||Date.now()-publishedAt>5000){publish(false);publishedAt=Date.now();}
       }
+      if(revision!==this.revision)return;
       // Continue tracking earlier signals even after the selected source or timeframe changes.
       const remaining=this.store.pending().filter(s=>!evaluated.has(s.id));const groups=new Map();
       for(const s of remaining){const key=s.marketId+'|'+s.timeframe;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(s);}
