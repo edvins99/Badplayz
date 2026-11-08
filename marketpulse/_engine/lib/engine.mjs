@@ -1,3 +1,4 @@
+import {relatedVenues} from './workspace.mjs';
 import {EventEmitter} from 'node:events';
 import {readFileSync} from 'node:fs';
 import {ExchangeAdapter,HttpClient,announcements,SOURCES} from './adapters.mjs';
@@ -61,7 +62,7 @@ export class ScannerEngine extends EventEmitter{
         }catch(e){health.push({source,ok:false,error:e.message,updatedAt:Date.now()});}
       }));
       this.status.sources=health;
-      const catalog=catalogUniverse(all);for(const m of catalog)this.store.putMarket(m);
+      const catalog=catalogUniverse(all);for(const m of all)this.store.putMarket(m);
       const selected=selectUniverse(catalog,settings);this.status.total=selected.length;this.status.phase='scanning';this.emitState();
       if(!selected.length)throw new Error(all.length?'Nav instrumentu ar izvēlētajiem filtriem. Samazini minimālo apjomu vai nomaini datu avotu.':'Tirgus dati nav sasniedzami. Pārbaudi interneta savienojumu vai izvēlies citu avotu.');
       const activityTf=settings.period==='5m'?'5m':settings.period==='15m'?'15m':'1h';
@@ -69,7 +70,7 @@ export class ScannerEngine extends EventEmitter{
       const rows=[],newSignals=[],evaluated=new Set(),selectedIds=new Set(selected.map(m=>m.id));
       const previous=this.snapshot.settings?.timeframe===settings.timeframe&&this.snapshot.settings?.period===settings.period?this.snapshot.rows:[];
       const enriched=new Map(previous.filter(m=>selectedIds.has(m.id)).map(m=>[m.id,{...m,...catalog.find(c=>c.id===m.id)}]));
-      const publish=complete=>{if(revision!==this.revision)return;this.snapshot={mode:this.mode,asOf:Date.now(),settings,catalog,rows:[...enriched.values()].sort((a,b)=>(b.score??-1)-(a.score??-1)),selectedIds:[...selectedIds],selectedCount:selected.length,scanComplete:complete,errors:[...errors],sources:health,discovered:all.length};this.store.putState('snapshot',this.snapshot);this.emitState('snapshot',this.snapshot);};
+      const publish=complete=>{if(revision!==this.revision)return;this.snapshot={mode:this.mode,asOf:Date.now(),settings,catalog,venues:all,rows:[...enriched.values()].sort((a,b)=>(b.score??-1)-(a.score??-1)),selectedIds:[...selectedIds],selectedCount:selected.length,scanComplete:complete,errors:[...errors],sources:health,discovered:all.length};this.store.putState('snapshot',this.snapshot);this.emitState('snapshot',this.snapshot);};
       // Publish all real quotes immediately; expensive candle history fills in progressively.
       publish(false);
       const pendingByMarket=new Map();for(const signal of this.store.pending()){const key=signal.marketId+'|'+signal.timeframe;if(!pendingByMarket.has(key))pendingByMarket.set(key,[]);pendingByMarket.get(key).push(signal);}
@@ -89,7 +90,7 @@ export class ScannerEngine extends EventEmitter{
             if(activityTf!==settings.timeframe){const old=this.store.candles(m.id,activityTf,5000),missing=old.length?Math.ceil((Date.now()-old.at(-1).ts)/TF[activityTf])+2:historyCount,raw=await a.candles(m,activityTf,old.length>=historyCount?Math.min(5000,Math.max(10,missing)):historyCount);this.store.putCandles(m.id,activityTf,closedBars(raw,activityTf));activityBars=this.store.candles(m.id,activityTf,5000);}
             const active=activity(activityBars,activityTf,settings.period),stale=Date.now()-last.ts-TF[settings.timeframe]>TF[settings.timeframe]*2;
             const signals=stale?[]:detectSignals(bars,m,settings.timeframe);
-            for(const s of signals)if(this.store.addSignal(s,profile(m.assetClass).cooldown*TF[settings.timeframe]))newSignals.push(s);
+            for(const s of signals)if((s.activity={rvol:active?.rvol??null,score:active?.score??null,period:settings.period},this.store.addSignal(s,profile(m.assetClass).cooldown*TF[settings.timeframe])))newSignals.push(s);
             for(const s of pendingByMarket.get(m.id+'|'+settings.timeframe)||[]){const result=evaluateResult(s,bars);if(result)this.store.putResult(s.id,result);evaluated.add(s.id);}
             const row={...m,move:change(last.o,last.c),activity:active,rvol:active?.rvol??null,score:active?.score??null,bars:bars.slice(-120),candleAsOf:last.ts+TF[settings.timeframe],stale,signals:signals.map(s=>s.strategy)};rows.push(row);enriched.set(m.id,row);
           }catch(e){errors.push({market:m.id,error:e.message});}
@@ -110,7 +111,7 @@ export class ScannerEngine extends EventEmitter{
         const news=await announcements(this.http);this.status.announcementSources=news.health;
         for(const listing of news.listings){
           const match=listing.marketType==='ALPHA'?null:all.find(m=>m.exchange===listing.exchange&&m.marketType===listing.marketType&&listing.tokens.length===1&&m.base===listing.tokens[0]);
-          if(match){listing.marketId=match.id;if(listing.status==='ANNOUNCED')listing.status='TRADING';
+          if(match){listing.marketId=match.id;if(listing.status==='ANNOUNCED'&&(!listing.tradingStartAt||listing.tradingStartAt<=Date.now()))listing.status='TRADING';
             // Never invent an announcement-time fill: retain only a clearly labelled first-observed quote.
             if(now-listing.announcedAt<120000){listing.referencePrice=match.price;listing.referenceAt=now;listing.referenceKind='first-observed';}}
           this.store.listing(listing);
@@ -124,16 +125,32 @@ export class ScannerEngine extends EventEmitter{
     }catch(e){this.status={...this.status,phase:'error',lastScanAt:Date.now(),error:e.message,sources:health};}
     finally{this.busy=false;this.emitState();if(this.running){this.timer=setTimeout(()=>this.scan(),this.again?100:this.store.settings().refreshSeconds*1000);this.again=false;}}
   }
-  async marketDetail(id){
+  async marketDetail(id,timeframe){
     const m=this.snapshot.catalog?.find(m=>m.id===id)||this.snapshot.rows.find(m=>m.id===id)||this.store.market(id);if(!m)return null;
-    const tf=this.store.settings().timeframe,key=id+'|'+tf;this.details??=new Map();
+    const tf=timeframe||this.store.settings().timeframe;if(!TF[tf])throw new Error('Nederīgs grafika intervāls');const key=id+'|'+tf;this.details??=new Map();
     if(this.details.has(key))return this.details.get(key);
     const work=(async()=>{
-      let bars=this.store.candles(id,tf,160),last=bars.at(-1);
-      if(bars.length<30||!last||Date.now()-last.ts>TF[tf]*2){const raw=await this.adapter(m.source).candles(m,tf,160);this.store.putCandles(id,tf,closedBars(raw,tf));bars=this.store.candles(id,tf,160);last=bars.at(-1);}
+      await this.store.prepareCandles?.(id,tf);let bars=this.store.candles(id,tf,500),last=bars.at(-1);
+      if(bars.length<180||!last||last.ts<Math.floor(Date.now()/TF[tf])*TF[tf]-TF[tf]){const raw=await this.adapter(m.source).candles(m,tf,300);this.store.putCandles(id,tf,closedBars(raw,tf));bars=this.store.candles(id,tf,500);last=bars.at(-1);}
       const enriched=this.snapshot.settings?.timeframe===tf?this.snapshot.rows.find(x=>x.id===id):null;
-      return {...m,...enriched,price:m.price,bars,timeframe:tf,move:last?change(last.o,last.c):null,candleAsOf:last?last.ts+TF[tf]:null};
+      return {...m,...enriched,activity:enriched?.activity||activity(this.store.candles(id,tf,5000),tf,tf==='1d'?'24h':tf),price:m.price,bars,timeframe:tf,move:last?change(last.o,last.c):null,candleAsOf:last?last.ts+TF[tf]:null};
     })();this.details.set(key,work);try{return await work;}finally{this.details.delete(key);}
+  }
+  async instrumentDetail(id,timeframe){
+    const market=await this.marketDetail(id,timeframe);if(!market)return null;
+    const venues=relatedVenues(market,this.snapshot.venues||this.snapshot.catalog||[]),ids=new Set([market.id,...venues.map(v=>v.id)]);
+    const signals=this.store.signals({limit:2000,assetClass:market.assetClass}).filter(s=>ids.has(s.marketId)).slice(0,40);
+    return{market,venues:venues.length?venues:[market],signals};
+  }
+  async listingDetail(id){
+    const listing=this.store.listings(1000).find(l=>l.id===id);if(!listing)return null;
+    if(listing.marketType==='ALPHA')return{listing,market:null,venues:[],signals:[],note:'Alpha grafikam vajadzīga pārbaudīta ķēdes un līguma identitāte. Vienādu simbolu nepiesaistām biržas tirgum.'};
+    const all=this.snapshot.venues||this.snapshot.catalog||[],m=all.find(m=>m.id===listing.marketId)||all.filter(m=>listing.tokens?.length===1&&m.base===listing.tokens[0]&&m.assetClass==='CRYPTO').sort((a,b)=>b.volume24h-a.volume24h)[0];
+    if(!m)return{listing,market:null,venues:[],signals:[],note:'Šim tokenam mūsu cenu avotos vēl nav droši identificēta tirgus. Oficiālais paziņojums pieejams saitē.'};
+    const start=listing.announcedAt-3600000,end=Math.min(Date.now(),listing.announcedAt+86400000),count=Math.min(500,Math.max(30,Math.ceil((end-start)/300000)+2));
+    const raw=await this.adapter(m.source).candles(m,'5m',count,{endTime:end}),bars=closedBars(raw,'5m').filter(b=>b.ts>=start&&b.ts<=end);
+    if(listing.referencePrice==null){const reference=bars.filter(b=>b.ts+300000<=listing.announcedAt).at(-1);if(reference&&listing.announcedAt-reference.ts-300000<=900000){listing.referencePrice=reference.c;listing.referenceAt=reference.ts+300000;listing.referenceKind='pre-announcement-candle';listing.marketId=m.id;this.store.listing(listing);}}
+    return{listing:{...listing,currentPrice:m.price,changeSince:listing.referencePrice?change(listing.referencePrice,m.price):null},market:{...m,bars,timeframe:'5m'},venues:relatedVenues(m,all),signals:[]};
   }
   view(){return {...this.snapshot,status:this.status,appliedSettings:this.snapshot.settings,settings:this.store.settings(),storage:this.store.stats()};}
   listingView(){return this.store.listings(150).map(l=>{const m=l.marketId?this.store.market(l.marketId):null;return {...l,currentPrice:m?.price??null,changeSince:l.referencePrice&&m?change(l.referencePrice,m.price):null};});}

@@ -1,3 +1,4 @@
+import {filtersFromParams} from './workspace.js';
 import {BrowserStore} from './store.js';
 import {ScannerEngine} from './engine.js';
 import {SOURCES} from './adapters.js';
@@ -8,7 +9,7 @@ const ready=(async()=>{
   store=await BrowserStore.open();
   try{const r=await fetch(new URL('./data/news.json',import.meta.url),{cache:'no-store'});if(r.ok){const news=await r.json();if(Array.isArray(news.rows)&&Number.isFinite(news.updatedAt))store.putState('news',news);}}catch{}
   try{const r=await fetch(new URL('./data/snapshot.json',import.meta.url),{cache:'no-store'});if(r.ok)await store.importPublic(await r.json());}catch{}
-  try{const r=await fetch(new URL('./data/history.json',import.meta.url),{cache:'no-store'});if(r.ok){const data=await r.json();for(const s of (data.signals||[]).slice(0,2000)){if(!validSignal(s)||store.signalsMap.has(s.id))continue;const {result,...signal}=s;store.addSignal(signal);if(result)store.putResult(s.id,result);}for(const l of (data.listings||[]).slice(0,1000))if(typeof l.id==='string'&&Number.isFinite(l.announcedAt)&&/^https:\/\//.test(l.sourceUrl))store.listing(l);}}catch{}
+  try{const r=await fetch(new URL('./data/history.json',import.meta.url),{cache:'no-store'});if(r.ok){const data=await r.json();for(const s of (data.signals||[]).slice(0,2000)){if(!validSignal(s))continue;const {result,...signal}=s;if(!store.signalsMap.has(s.id))store.addSignal(signal);const old=store.signalsMap.get(s.id)?.result;if(result&&(!old||result.evaluatedAt>old.evaluatedAt))store.putResult(s.id,result);}for(const l of (data.listings||[]).slice(0,1000))if(typeof l.id==='string'&&Number.isFinite(l.announcedAt)&&/^https:\/\//.test(l.sourceUrl))store.listing(l);}}catch{}
   engine=new ScannerEngine(store,{mode:'live'});
   engine.on('event',({event,data})=>postMessage({type:'event',event,data:event==='snapshot'?view():data}));
   setTimeout(()=>engine.start(),250);
@@ -25,10 +26,10 @@ self.onmessage=async({data:request})=>{
       case '/api/signals':{
         const limit=Math.min(100,Math.max(1,Number(url.searchParams.get('limit')||30))),cursor=url.searchParams.get('cursor');let before=Number.MAX_SAFE_INTEGER,beforeId='~';
         if(cursor){const c=JSON.parse(atob(cursor.replace(/-/g,'+').replace(/_/g,'/')));before=c.time;beforeId=c.id;if(!Number.isFinite(before)||typeof beforeId!=='string')throw new Error('Nederīga vēstures lapa');}
-        const rows=store.signals({limit:limit+1,before,beforeId,strategy:url.searchParams.get('strategy')||'ALL',assetClass:url.searchParams.get('assetClass')||'ALL',query:url.searchParams.get('q')||''}),more=rows.length>limit;rows.splice(limit);const last=rows.at(-1);
+        const rows=store.signals({limit:limit+1,before,beforeId,strategy:url.searchParams.get('strategy')||'ALL',assetClass:url.searchParams.get('assetClass')||'ALL',query:url.searchParams.get('q')||'',filters:filtersFromParams(url.searchParams)}),more=rows.length>limit;rows.splice(limit);const last=rows.at(-1);
         data={rows,nextCursor:more&&last?btoa(JSON.stringify({time:last.createdAt,id:last.id})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''):null};break;
       }
-      case '/api/results':data={rows:store.results(300)};break;
+      case '/api/results':data={rows:store.results(2000)};break;
       case '/api/listings':data={rows:engine.listingView(),sources:engine.status.announcementSources};break;
       case '/api/news':{
         data=store.getState('news');
@@ -36,7 +37,9 @@ self.onmessage=async({data:request})=>{
         if(!data)data=await cachedNews(store);break;
       }
       case '/api/database':await store.prepareInventory();data={rows:store.database(engine.snapshot.selectedIds),updatedAt:Date.now()};break;
-      case '/api/market':data=await engine.marketDetail(url.searchParams.get('id'));if(!data)throw new Error('Instruments vairs nav pieejams');break;
+      case '/api/instrument':data=await engine.instrumentDetail(url.searchParams.get('id'),url.searchParams.get('tf'));break;
+      case '/api/listing':data=await engine.listingDetail(url.searchParams.get('id'));break;
+      case '/api/market':data=await engine.marketDetail(url.searchParams.get('id'),url.searchParams.get('tf'));if(!data)throw new Error('Instruments vairs nav pieejams');break;
       case '/api/export':data={exportedAt:new Date().toISOString(),mode:'live',host:'github-pages',signals:store.signals({limit:2000}),results:store.results(2000),listings:store.listings(1000)};break;
       default:throw new Error('Nezināma darbība');
     }

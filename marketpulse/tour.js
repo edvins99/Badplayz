@@ -1,5 +1,8 @@
 export function installTour({navigate}){
   const steps=[
+    ['markets','#profile-bar','Saglabātas atlases','Atver Filtri, izvēlies biržu, Spot/Perpetual, apjomu, RVOL un signālu kritērijus. Nosauc atlasi un saglabā. To var atjaunot ar vienu izvēli.'],
+    ['markets','#market-content','Instrumenta pilnais skats','Atver tirgu: izvēlies grafika intervālu, pietuvini, pārvieto vēsturi un salīdzini pieejamos biržu tirgus. Grafika intervāls nemaina fona skeneri.'],
+    ['results','#market-content','Rezultātu kopsavilkums','Izvēlies 7 vai 30 dienas un stratēģiju. Kopsavilkumi izmanto tikai pabeigtus logus ar pilnu datu pārklājumu. TP/SL secība vienā svecē var nebūt zināma.'],
     ['dashboard','#asset-scope','Aktīvu grupas','Visi tirgi, Kripto, Akcijas un Izejvielas filtrē pašreizējo sadaļu. Izvēle saglabājas šajā pārlūkā.'],
     ['dashboard','#scanner-toggles','Mani skeneri','Seši slēdži rāda vai paslēpj pārskata blokus. Skenera nosaukums atver pilno plūsmu. Slēdzis nemaina fona aprēķinus.'],
     ['dashboard','#market-content','Pārskata kolonnas','Katrs bloks rāda savus jaunākos signālus. Kartītes grafiks atver saglabāto signāla momentuzņēmumu.'],

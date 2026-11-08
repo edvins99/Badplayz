@@ -11,8 +11,8 @@ export function spark(bars,positive=true,cls='spark'){
   const values=bars.map(b=>b.c),min=Math.min(...values),range=Math.max(...values)-min||1;
   return '<svg class="'+cls+' '+(positive?'positive':'negative')+'" viewBox="0 0 120 48" preserveAspectRatio="none" aria-label="Cenu līkne"><polyline vector-effect="non-scaling-stroke" points="'+values.map((v,i)=>(i/(values.length-1||1)*120).toFixed(2)+','+(40-(v-min)/range*32).toFixed(2)).join(' ')+'"/></svg>';
 }
-export function candles(all,{overlay=null,limit=80,mini=false}={}){
-  const bars=all?.slice(-limit)||[];if(!bars.length)return '<div class="empty-mini">Grafika dati nav pieejami.</div>';
+export function candles(all,{overlay=null,limit=80,mini=false,offset=0,markers=[],wave=null}={}){
+  const end=Math.max(0,(all?.length||0)-offset),bars=all?.slice(Math.max(0,end-limit),end)||[];if(!bars.length)return '<div class="empty-mini">Grafika dati nav pieejami.</div>';
   const w=800,h=mini?250:320,L=12,R=mini?8:90,T=20,B=mini?12:38,pw=w-L-R;
   const extra=overlay?[overlay.levelPrice,overlay.entry,overlay.tp,overlay.sl,overlay.line?.p2?.price].filter(Number.isFinite):[];
   let low=Math.min(...bars.map(b=>b.l),...extra),high=Math.max(...bars.map(b=>b.h),...extra);const padding=(high-low)*.08||high*.01;low-=padding;high+=padding;
@@ -24,6 +24,10 @@ export function candles(all,{overlay=null,limit=80,mini=false}={}){
   for(let i=0;i<bars.length;i++){
     const b=bars[i],color=b.c>=b.o?'#43d5b0':'#f27d8b',xx=x(i),bw=Math.max(2,pw/bars.length*.65),volume=maxVolume>0?(b.q??b.v)/maxVolume*40:0;
     svg+='<g data-bar="'+i+'"><rect x="'+(xx-bw/2)+'" y="'+(h-B-volume)+'" width="'+bw+'" height="'+volume+'" fill="'+color+'" opacity=".13"/><path d="M'+xx+' '+y(b.h)+'V'+y(b.l)+'" stroke="'+color+'"/><rect x="'+(xx-bw/2)+'" y="'+Math.min(y(b.o),y(b.c))+'" width="'+bw+'" height="'+Math.max(1,Math.abs(y(b.o)-y(b.c)))+'" fill="'+color+'"/></g>';
+  }
+  if(!mini){
+    const events=[...markers];if(wave)events.push({ts:wave.ts,label:'Apjoma vilnis '+pct(wave.changePct),color:'#c4f36b',wave:true});
+    for(const marker of events){if(!Number.isFinite(marker.ts)||marker.ts<bars[0].ts||marker.ts>bars.at(-1).ts+(bars[1]?.ts-bars[0].ts||1))continue;const xx=timeX(marker.ts),color=marker.color||'#eab777';if(marker.wave)svg+='<rect x="'+Math.max(L,xx)+'" y="'+T+'" width="'+Math.max(0,w-R-xx)+'" height="'+(h-T-B)+'" fill="'+color+'" opacity=".045" data-wave-region="true"/>';svg+='<g data-chart-marker="'+escapeHtml(marker.wave?'wave':marker.label)+'"><path d="M'+xx+' '+T+'V'+(h-B)+'" stroke="'+color+'" stroke-dasharray="4 4"/><text x="'+Math.min(w-R-160,Math.max(L+4,xx+5))+'" y="'+(T+12)+'" fill="'+color+'" font-size="10">'+escapeHtml(marker.label)+'</text></g>';}
   }
   if(overlay){for(const [value,color,label]of [[overlay.levelPrice,'#c6f56b','LEVEL'],[overlay.entry,'#a6b6cb','ENTRY'],[overlay.tp,'#43d5b0','TP'],[overlay.sl,'#f27d8b','SL']])if(Number.isFinite(value)){svg+='<path d="M'+L+' '+y(value)+'H'+(w-R)+'" stroke="'+color+'" stroke-dasharray="5 5" opacity=".7"/>';if(!mini)svg+='<text x="'+(L+5)+'" y="'+(y(value)-5)+'" fill="'+color+'" font-size="10">'+label+' '+price(value)+'</text>';}
     if(overlay.line){const line=overlay.line,a=line.p1,b=line.p2,start=Math.max(a.ts,bars[0].ts),ratio=(start-a.ts)/(b.ts-a.ts||1),startPrice=a.price+(b.price-a.price)*ratio;svg+='<path d="M'+timeX(start)+' '+y(startPrice)+'L'+timeX(b.ts)+' '+y(b.price)+'" stroke="#b4a0fa" stroke-width="2"/>';for(const touch of line.touches||[])if(touch.ts>=bars[0].ts)svg+='<circle cx="'+timeX(touch.ts)+'" cy="'+y(touch.price)+'" r="4" fill="#b4a0fa"/>';}}

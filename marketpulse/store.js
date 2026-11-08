@@ -1,14 +1,15 @@
+import {FILTER_DEFAULTS,workspaceSettings,signalMatches} from './workspace.js';
 import {TF,PERIOD} from './analytics.js';
 import {SOURCES} from './adapters.js';
 import {SCANNER_IDS,databaseRows} from './panels.js';
-export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL',assetScope:'ALL',visibleScanners:SCANNER_IDS};
+export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL',assetScope:'ALL',visibleScanners:SCANNER_IDS,viewFilters:FILTER_DEFAULTS,filterProfiles:[],activeProfileId:null};
 export function validateSettings(input,current=DEFAULT_SETTINGS){
   if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('Nederīgi iestatījumi');
   for(const key of Object.keys(input))if(!(key in DEFAULT_SETTINGS))throw new Error('Nezināms iestatījums');
   const s={...DEFAULT_SETTINGS,...current,...input};if(!['auto',...SOURCES].includes(s.source)||!TF[s.timeframe]||!PERIOD[s.period]||s.period==='1d')throw new Error('Nederīgs avots vai intervāls');
   if(!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetScope)||!Array.isArray(s.visibleScanners)||s.visibleScanners.length>6||s.visibleScanners.some(x=>!SCANNER_IDS.includes(x)))throw new Error('Nederīgi pārskata iestatījumi');s.visibleScanners=[...new Set(s.visibleScanners)];
   for(const [key,min,max]of [['maxMarkets',5,1000],['minVolume24h',0,1e12],['minTradfiVolume24h',0,1e12],['refreshSeconds',30,600]])if(!Number.isFinite(s[key])||s[key]<min||s[key]>max)throw new Error('Nederīgs '+key);
-  if(!Number.isInteger(s.maxMarkets)||!Number.isInteger(s.refreshSeconds)||typeof s.sound!=='boolean'||!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetClass)||!Array.isArray(s.saved)||s.saved.length>200||s.saved.some(x=>typeof x!=='string'||x.length>100))throw new Error('Nederīgi filtri');return s;
+  if(!Number.isInteger(s.maxMarkets)||!Number.isInteger(s.refreshSeconds)||typeof s.sound!=='boolean'||!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetClass)||!Array.isArray(s.saved)||s.saved.length>200||s.saved.some(x=>typeof x!=='string'||x.length>100))throw new Error('Nederīgi filtri');return {...s,...workspaceSettings(s)};
 }
 export class BrowserStore{
   constructor(){for(const name of ['kv','markets','candles','signals','listings','universe'])this[name+'Map']=new Map();this.warning=null;this.candleCount=0;}
@@ -37,8 +38,8 @@ export class BrowserStore{
   async prepareCandles(id,tf){const key=id+'|'+tf;if(this.candlesMap.has(key))return;if(this.db){try{const value=await request(this.db.transaction('candles').objectStore('candles').get(key));if(value)this.candlesMap.set(key,value);}catch{}}}
   putCandles(id,tf,bars){const key=id+'|'+tf,old=this.candlesMap.get(key)||[],all=[...new Map([...old,...bars].map(b=>[b.ts,b])).values()].sort((a,b)=>a.ts-b.ts).slice(-5000);this.candlesMap.set(key,all);this.candleCounts??={};this.candleCount+=all.length-(this.candleCounts[key]||0);this.candleCounts[key]=all.length;this.write('candles',key,all);this.write('kv','candle-counts',this.candleCounts);const meta=this.kvMap.get('candle-meta')||{};meta[key]={firstTs:all[0]?.ts??null,lastTs:all.at(-1)?.ts??null};this.kvMap.set('candle-meta',meta);this.write('kv','candle-meta',meta);}
   candles(id,tf,limit=5000){return (this.candlesMap.get(id+'|'+tf)||[]).slice(-limit);}
-  addSignal(s,cooldown=0){if(this.signalsMap.has(s.id))return false;const previous=[...this.signalsMap.values()].filter(x=>x.marketId===s.marketId&&x.strategy===s.strategy&&x.timeframe===s.timeframe).sort((a,b)=>b.barTime-a.barTime)[0];if(previous&&s.barTime-previous.barTime<cooldown)return false;this.signalsMap.set(s.id,s);this.write('signals',s.id,s);return true;}
-  signals({limit=50,before=Number.MAX_SAFE_INTEGER,beforeId='~',strategy='ALL',assetClass='ALL',query=''}={}){return [...this.signalsMap.values()].filter(s=>(s.createdAt<before||(s.createdAt===before&&s.id<beforeId))&&(strategy==='ALL'||s.strategy===strategy)&&(assetClass==='ALL'||s.market.assetClass===assetClass)&&s.market.base.toUpperCase().includes(query.toUpperCase())).sort((a,b)=>b.createdAt-a.createdAt||b.id.localeCompare(a.id)).slice(0,limit);}
+  addSignal(s,cooldown=0){if(this.signalsMap.has(s.id))return false;const previous=[...this.signalsMap.values()].filter(x=>x.marketId===s.marketId&&x.strategy===s.strategy&&x.timeframe===s.timeframe).sort((a,b)=>b.barTime-a.barTime)[0];if(previous&&cooldown>0&&s.barTime-previous.barTime<cooldown)return false;this.signalsMap.set(s.id,s);this.write('signals',s.id,s);return true;}
+  signals({limit=50,before=Number.MAX_SAFE_INTEGER,beforeId='~',strategy='ALL',assetClass='ALL',query='',filters=FILTER_DEFAULTS}={}){return [...this.signalsMap.values()].filter(s=>signalMatches(s,filters,this.settings().saved)&&(s.createdAt<before||(s.createdAt===before&&s.id<beforeId))&&(strategy==='ALL'||s.strategy===strategy)&&(assetClass==='ALL'||s.market.assetClass===assetClass)&&s.market.base.toUpperCase().includes(query.toUpperCase())).sort((a,b)=>b.createdAt-a.createdAt||b.id.localeCompare(a.id)).slice(0,limit);}
   pending(){return this.signals({limit:2000}).filter(s=>!s.result||!s.result.finalized).slice(0,500);}
   putResult(id,result){const s=this.signalsMap.get(id);if(s){const next={...s,result};this.signalsMap.set(id,next);this.write('signals',id,next);}}
   results(limit=100){return this.signals({limit:2000}).filter(s=>s.result).slice(0,limit).map(s=>{const {result,...signal}=s;return{signal,...result};});}

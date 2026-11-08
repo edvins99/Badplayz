@@ -35,3 +35,13 @@ The default background scan is 300 markets at 15m, while each browser can choose
 `node marketpulse/_engine/e2e.mjs` uses Playwright to check the complete browser application on a repository subpath, including real feed, charts, filters, persistence, export, all scanner sections, interactive guide and mobile navigation.
 
 Information and education only. Not financial advice. No guaranteed profit. MFE/MAE are hypothetical price movement; fees, spread, slippage and funding are not deducted.
+
+
+## Saved selections and detailed analysis
+
+- Save up to 12 named filter profiles on this device (exchange, spot/perpetual, volume, RVOL, move, direction, asset class, strategy, signal timeframe and saved markets). Display filters do not restart ingestion. Signal RVOL uses its recorded value; older signals without that field are excluded when an RVOL minimum is set.
+- Instrument detail supports independent 5m/15m/1h/4h/1d charts, 30/80/160 candle views, wheel zoom, pointer/keyboard/history-slider panning, per-venue quotes and recent signal history. Signal snapshots remain immutable and have a separate current-market view.
+- Charts mark detected volume-wave starts and price movement since that point. This is a heuristic observation using closed candles.
+- Official announcement adapters cover Binance, Bybit, OKX and Bitget, alongside market-list discoveries from active price sources. Bitget copy-trading announcements are excluded. Per-source availability is explicit; region restrictions are not bypassed.
+- Listing detail has an approximately one-hour pre-announcement chart and up to 24 hours afterward when an identified market and historical data exist. Alpha is never linked by ticker alone. Trading start is displayed only when explicit. A historical reference uses the last available closed 5m candle before announcement (within 15 minutes) and is labelled as such; first-observed quotes retain their own immutable timestamp.
+- Results aggregate 7/30-day samples by strategy and asset class. Only finalized windows with complete candle coverage enter medians, means and outcome counts. TP-first, SL-first and same-bar unknown outcomes remain separate. These are observations without fees or executed trades, not portfolio returns.

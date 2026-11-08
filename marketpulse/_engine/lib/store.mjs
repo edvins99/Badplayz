@@ -1,9 +1,10 @@
+import {FILTER_DEFAULTS,workspaceSettings,signalMatches} from './workspace.mjs';
 import {DatabaseSync} from 'node:sqlite';
 import {mkdirSync} from 'node:fs';
 import {dirname} from 'node:path';
 import {TF,PERIOD} from './analytics.mjs';
 import {SCANNER_IDS,databaseRows} from './panels.mjs';
-export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL',assetScope:'ALL',visibleScanners:SCANNER_IDS};
+export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL',assetScope:'ALL',visibleScanners:SCANNER_IDS,viewFilters:FILTER_DEFAULTS,filterProfiles:[],activeProfileId:null};
 export function validateSettings(input,current=DEFAULT_SETTINGS){
   if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('Settings must be an object');
   const allowed=new Set(Object.keys(DEFAULT_SETTINGS));for(const key of Object.keys(input))if(!allowed.has(key))throw new Error('Unknown setting: '+key);
@@ -15,7 +16,7 @@ export function validateSettings(input,current=DEFAULT_SETTINGS){
   if(!Array.isArray(s.saved)||s.saved.length>200||s.saved.some(x=>typeof x!=='string'||x.length>100))throw new Error('Invalid saved markets');
   if(!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetScope)||!Array.isArray(s.visibleScanners)||s.visibleScanners.length>6||s.visibleScanners.some(x=>!SCANNER_IDS.includes(x)))throw new Error('Invalid dashboard settings');
   s.visibleScanners=[...new Set(s.visibleScanners)];
-  return s;
+  return {...s,...workspaceSettings(s)};
 }
 export class Store{
   constructor(path){
@@ -41,11 +42,13 @@ export class Store{
   candles(id,tf,limit=5000){return this.db.prepare('SELECT ts,o,h,l,c,v,q FROM candles WHERE market=? AND tf=? ORDER BY ts DESC LIMIT ?').all(id,tf,limit).reverse().map(x=>({...x}));}
   addSignal(s,cooldownMs=0){
     const previous=this.db.prepare('SELECT bar FROM signals WHERE market=? AND strategy=? AND tf=? ORDER BY bar DESC LIMIT 1').get(s.marketId,s.strategy,s.timeframe);
-    if(previous&&s.barTime-previous.bar<cooldownMs)return false;
+    if(previous&&cooldownMs>0&&s.barTime-previous.bar<cooldownMs)return false;
     return this.db.prepare('INSERT OR IGNORE INTO signals(id,market,strategy,tf,bar,created,document) VALUES(?,?,?,?,?,?,?)').run(s.id,s.marketId,s.strategy,s.timeframe,s.barTime,s.createdAt,JSON.stringify(s)).changes>0;
   }
-  signals({limit=50,before=Number.MAX_SAFE_INTEGER,beforeId='~',strategy='ALL',assetClass='ALL',query=''}={}){
-    return this.db.prepare("SELECT document,result FROM signals WHERE (created<? OR (created=? AND id<?)) AND (?='ALL' OR strategy=?) AND (?='ALL' OR json_extract(document,'$.market.assetClass')=?) AND (?='' OR instr(upper(json_extract(document,'$.market.base')),?)>0) ORDER BY created DESC,id DESC LIMIT ?").all(before,before,beforeId,strategy,strategy,assetClass,assetClass,query,query.toUpperCase(),Math.min(2000,Math.max(1,limit))).map(r=>({...JSON.parse(r.document),result:r.result?JSON.parse(r.result):null}));
+  signals({limit=50,before=Number.MAX_SAFE_INTEGER,beforeId='~',strategy='ALL',assetClass='ALL',query='',filters=FILTER_DEFAULTS}={}){
+    const saved=filters.onlySaved?this.settings().saved:[],out=[];
+    const cursor=this.db.prepare("SELECT document,result FROM signals WHERE (created<? OR (created=? AND id<?)) AND (?='ALL' OR strategy=?) AND (?='ALL' OR json_extract(document,'$.market.assetClass')=?) AND (?='' OR instr(upper(json_extract(document,'$.market.base')),?)>0) ORDER BY created DESC,id DESC").iterate(before,before,beforeId,strategy,strategy,assetClass,assetClass,query,query.toUpperCase());
+    for(const row of cursor){const s={...JSON.parse(row.document),result:row.result?JSON.parse(row.result):null};if(signalMatches(s,filters,saved))out.push(s);if(out.length>=Math.min(2000,Math.max(1,limit)))break;}return out;
   }
   pending(){return this.db.prepare("SELECT document FROM signals WHERE result IS NULL OR json_extract(result,'$.finalized')=0 ORDER BY created DESC LIMIT 500").all().map(r=>JSON.parse(r.document));}
   putResult(id,result){this.db.prepare('UPDATE signals SET result=? WHERE id=?').run(JSON.stringify(result),id);}

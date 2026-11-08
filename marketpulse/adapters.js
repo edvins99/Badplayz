@@ -19,7 +19,7 @@ export const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 export class HttpClient{
   constructor({fetchImpl=globalThis.fetch.bind(globalThis),delay=250,wait=sleep}={}){this.fetchImpl=fetchImpl;this.delay=delay;this.wait=wait;this.queues=new Map();this.last=new Map();this.cache=new Map();}
   async json(url,ttl=0){
-    const u=new URL(url),allowed=['data-api.binance.vision','fapi.binance.com','api.bybit.com','www.okx.com','www.binance.com'];
+    const u=new URL(url),allowed=['data-api.binance.vision','fapi.binance.com','api.bybit.com','www.okx.com','www.binance.com','api.bitget.com'];
     if(u.protocol!=='https:'||!allowed.includes(u.hostname))throw new Error('Unsupported upstream host');
     const hit=this.cache.get(url);if(hit&&hit.expires>Date.now())return hit.data;
     const previous=this.queues.get(u.hostname)||Promise.resolve();
@@ -101,20 +101,27 @@ export class ExchangeAdapter{
   }
 }
 export function listingTokens(title){
-  const found=new Set();for(const m of title.matchAll(/\(([A-Z][A-Z0-9]{1,14})\)|\$([A-Z][A-Z0-9]{1,14})\b|\b([A-Z][A-Z0-9]{1,14})USDT\b/g))found.add(m[1]||m[2]||m[3]);
+  const found=new Set();for(const m of title.matchAll(/\(([A-Z][A-Z0-9]{1,14})\)|\$([A-Z][A-Z0-9]{1,14})\b|\b([A-Z][A-Z0-9]{1,14})(?:\/)?USDT\b/g))found.add(m[1]||m[2]||m[3]);
   for(const word of ['USDT','USDC','USD','UTC','ETF','APR','VIP','SPOT','US','AI'])found.delete(word);return [...found];
 }
+export function tradingStart(item){
+  for(const k of ['tradingStartAt','tradingStartTime']){const n=Number(item[k]);if(Number.isFinite(n)&&n>1e12&&n<4e12)return n;}
+  const text=String(item.description||item.annDesc||item.title||'').replace(/<[^>]+>/g,' '),match=text.match(/trading (?:starts?|opens?|start time)[\s\S]{0,40}?(20\d{2}-\d{2}-\d{2})[ T]+(\d{2}:\d{2})(?::\d{2})?\s*\(?UTC\)?/i);
+  if(!match)return null;const n=Date.parse(match[1]+'T'+match[2]+':00Z');return Number.isFinite(n)?n:null;
+}
 export function parseAnnouncement(item,exchange){
-  const title=String(item.title||'');if(!/list(?:ing|s|ed)?\b|delist|launchpool|alpha/i.test(title))return null;
-  const url=item.url||(item.code?'https://www.binance.com/en/support/announcement/'+item.code:null);
+  const title=String(item.title||item.annTitle||'');if(!/list(?:ing|s|ed)?\b|delist|launchpool|alpha|launch/i.test(title))return null;
+  const url=item.url||item.annUrl||(item.code?'https://www.binance.com/en/support/announcement/'+item.code:null);
   if(!url||!/^https:\/\//.test(url))return null;
-  const announcedAt=Number(item.publishTime||item.releaseDate||item.dateTimestamp||item.pTime);if(!Number.isFinite(announcedAt)||announcedAt<1e12)return null;
-  const marketType=/alpha/i.test(title)?'ALPHA':/perpetual|futures|USDT.*contract/i.test(title)?'PERP':'SPOT';
-  return {id:createHash('sha256').update(exchange+':'+url).digest('hex').slice(0,28),title,tokens:listingTokens(title),exchange,marketType,announcedAt,tradingStartAt:null,status:/delist/i.test(title)?'DELISTING_ANNOUNCED':'ANNOUNCED',sourceUrl:url,referencePrice:null,mode:'live',discovery:'announcement'};
+  const announcedAt=Number(item.publishTime||item.releaseDate||item.dateTimestamp||item.pTime||item.cTime);if(!Number.isFinite(announcedAt)||announcedAt<1e12)return null;
+  const marketType=/alpha/i.test(title)?'ALPHA':/perpetual|futures|USDT.*contract|x-perp/i.test(title)||item.annSubType==='futures'?'PERP':'SPOT';
+  return {id:createHash('sha256').update(exchange+':'+url).digest('hex').slice(0,28),title,tokens:listingTokens(title),exchange,marketType,announcedAt,tradingStartAt:tradingStart(item),status:/delist/i.test(title)?'DELISTING_ANNOUNCED':'ANNOUNCED',sourceUrl:url,referencePrice:null,mode:'live',discovery:'announcement'};
 }
 export async function announcements(http){
   const lists=[],health=[];
   await Promise.all([
+    (async()=>{try{let cursor='',count=0;for(let page=0;page<6;page++){const d=await http.json('https://api.bitget.com/api/v2/public/annoucements?language=en_US&annType=coin_listings&limit=10'+(cursor?'&cursor='+encodeURIComponent(cursor):''),60000);if(d.code!=='00000'||!Array.isArray(d.data))throw new Error(d.msg||'Bitget formāts nav pieejams');const records=d.data.filter(i=>['spot','futures'].includes(i.annSubType)).map(i=>parseAnnouncement(i,'bitget')).filter(Boolean);lists.push(...records);count+=records.length;if(d.data.length<10||count>=15)break;const next=d.data.at(-1)?.annId;if(!next||next===cursor)break;cursor=next;}health.push({source:'Bitget announcements',ok:true,count,updatedAt:Date.now()});}catch(e){health.push({source:'Bitget announcements',ok:false,error:e.message});}})(),
+    (async()=>{try{const d=await http.json('https://www.okx.com/api/v5/support/announcements?annType=announcements-new-listings',60000);if(d.code!=='0'||!Array.isArray(d.data))throw new Error(d.msg||'OKX formāts nav pieejams');const records=d.data.flatMap(i=>i.details||[]).map(i=>parseAnnouncement(i,'okx')).filter(Boolean);lists.push(...records);health.push({source:'OKX announcements',ok:true,count:records.length,updatedAt:Date.now()});}catch(e){health.push({source:'OKX announcements',ok:false,error:e.message});}})(),
     (async()=>{try{const d=await http.json('https://api.bybit.com/v5/announcements/index?locale=en-US&limit=50',60000);if(d.retCode!==0)throw new Error(d.retMsg);lists.push(...d.result.list.map(i=>parseAnnouncement(i,'bybit')).filter(Boolean));health.push({source:'Bybit announcements',ok:true,updatedAt:Date.now()});}catch(e){health.push({source:'Bybit announcements',ok:false,error:e.message});}})(),
     (async()=>{try{const d=await http.json('https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&pageNo=1&pageSize=30&catalogId=48',60000);const items=d.data?.catalogs?.flatMap(c=>c.articles||[])||d.data?.articles;if(!items)throw new Error('Binance announcement format unavailable');lists.push(...items.map(i=>parseAnnouncement(i,'binance')).filter(Boolean));health.push({source:'Binance announcements',ok:true,updatedAt:Date.now()});}catch(e){health.push({source:'Binance announcements',ok:false,error:e.message});}})()
   ]);return {listings:lists,health};
