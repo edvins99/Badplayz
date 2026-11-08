@@ -1,45 +1,51 @@
 name: Deploy to GitHub Pages
-
 on:
-  # Run on every push to main
   push:
     branches: [main]
-  # Allow manual trigger from the Actions tab
   workflow_dispatch:
-
-# Permissions needed for Pages deployment
 permissions:
   contents: read
   pages: write
   id-token: write
-
-# Only one deployment at a time, cancel in-progress ones
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          # Auto-enable Pages on first run if it's not enabled yet
+          node-version: '24'
+      - uses: actions/configure-pages@v5
+        with:
           enablement: true
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Check browser engine and causal signal identity
+        run: node marketpulse/_engine/check.mjs
+      - name: Generate verified live public market feed
+        run: node marketpulse/_engine/publish.mjs
+      - name: Install browser checks
+        run: |
+          npm install --prefix "$RUNNER_TEMP/marketpulse-browser" playwright@1.56.1
+          "$RUNNER_TEMP/marketpulse-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Verify every main control on the GitHub Pages path
+        env:
+          PLAYWRIGHT_MODULE: file://${{ runner.temp }}/marketpulse-browser/node_modules/playwright/index.mjs
+        run: node marketpulse/_engine/e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          # Upload the entire repo (it's just static HTML/CSS)
+          name: marketpulse-browser-checks
+          path: marketpulse-checks/
+          retention-days: 2
+      - uses: actions/upload-pages-artifact@v3
+        with:
           path: '.'
-
-      - name: Deploy to GitHub Pages
+      - name: Publish verified site
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,1 @@
+export class EventEmitter{constructor(){this.events=new Map();}on(type,fn){if(!this.events.has(type))this.events.set(type,new Set());this.events.get(type).add(fn);return this;}off(type,fn){this.events.get(type)?.delete(fn);return this;}emit(type,data){for(const fn of this.events.get(type)||[])fn(data);}}

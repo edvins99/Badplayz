@@ -1,0 +1,14 @@
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {sha256} from '../hash.js';
+import * as browser from '../analytics.js';
+import * as server from './lib/analytics.mjs';
+import {classify} from '../adapters.js';
+import {BrowserStore,validateSettings} from '../store.js';
+for(const s of ['', 'abc','zelts · akcijas','x'.repeat(55),'x'.repeat(64),'x'.repeat(257)])assert.equal(sha256(s),createHash('sha256').update(s).digest('hex'));
+const end=Date.UTC(2026,10,8),bars=Array.from({length:100},(_,i)=>({ts:end-(100-i)*900000,o:100,h:101,l:99,c:100,v:10,q:1000}));bars.at(-1).c=108;bars.at(-1).h=109;
+const market={id:'binance-spot:BTCUSDT',base:'BTC',source:'binance-spot',exchange:'binance',marketType:'SPOT',assetClass:'CRYPTO'};
+assert.deepEqual(browser.detectSignals(bars,market,'15m',end),server.detectSignals(bars,market,'15m',end));
+assert.equal(classify('AAOI',{symbolType:'stock'},'bybit'),'STOCK');assert.equal(classify('BZ',{instCategory:'4'},'okx'),'COMMODITY');
+const store=new BrowserStore();store.saveSettings({saved:[market.id],maxMarkets:20});const signal=browser.detectSignals(bars,market,'15m',end)[0];assert.ok(store.addSignal(signal));assert.equal(store.addSignal(signal),false);assert.equal(store.signals().length,1);assert.equal(store.settings().saved[0],market.id);assert.throws(()=>validateSettings({source:'mock'}));assert.throws(()=>validateSettings({source:'https://evil.example'}));
+console.log('Browser SHA-256, detector parity, provider categories, persistence contract and settings validation passed');

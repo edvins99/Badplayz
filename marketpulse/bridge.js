@@ -1,0 +1,6 @@
+const worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'}),pending=new Map(),listeners=new Set();let serial=0;
+worker.onmessage=({data})=>{if(data.type==='event'){for(const fn of listeners)fn(data.event,data.data);}else if(pending.has(data.id)){const p=pending.get(data.id);pending.delete(data.id);clearTimeout(p.timer);data.error?p.reject(new Error(data.error)):p.resolve(data.data);}};
+worker.onerror=()=>{for(const p of pending.values()){clearTimeout(p.timer);p.reject(new Error('Neizdevās palaist pārlūka skeneri. Pārlādē lapu.'));}pending.clear();};
+export function clientApi(path,body){return new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{pending.delete(id);reject(new Error('Datu avots neatbild. Pamēģini vēlreiz.'));},90000);pending.set(id,{resolve,reject,timer});worker.postMessage({id,path,body});});}
+export function subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);}
+export async function downloadExport(){const data=await clientApi('/api/export'),blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MarketPulse-history.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
