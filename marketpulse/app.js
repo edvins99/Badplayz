@@ -69,7 +69,7 @@ function chrome(){
   status();
 }
 function matches(m,move,rvol,direction=move>0?'up':move<0?'down':'flat',useRvol=true){return inScope(m)&&(m.base+' '+(m.displayName||'')+' '+(m.underlyingTicker||'')).toUpperCase().includes(state.query.toUpperCase())&&(state.asset==='ALL'||m.assetClass===state.asset)&&(state.direction==='all'||state.direction===direction)&&Math.abs(move)>=state.minMove&&(!useRvol||state.minRvol===0||(rvol??0)>=state.minRvol);}
-function marketRows(){const universe=state.view==='top10'?rankTopCoins(catalogRows()):catalogRows();return universe.filter(r=>(state.view!=='saved'||saved(r.id))&&(!classView()||r.assetClass===classView())&&matches(r,r.activity?.movePct??null,r.rvol)).sort((a,b)=>state.view==='top10'?b.volume24h-a.volume24h:state.sort==='name'?a.base.localeCompare(b.base):state.sort==='change24h'?Math.abs(b.change24h)-Math.abs(a.change24h):state.sort==='move'?Math.abs(b.activity?.movePct??0)-Math.abs(a.activity?.movePct??0):state.sort==='rvol'?(b.rvol??-1)-(a.rvol??-1):state.sort==='volume'?b.volume24h-a.volume24h:(b.score??-1)-(a.score??-1)||b.volume24h-a.volume24h);}
+function marketRows(){const universe=state.view==='top10'?rankTopCoins(catalogRows()):catalogRows();return universe.filter(r=>(state.view!=='saved'||saved(r.id))&&(!classView()||r.assetClass===classView())&&matches(r,r.activity?.movePct??null,r.rvol)).sort((a,b)=>state.sort==='name'?a.base.localeCompare(b.base):state.sort==='change24h'?Math.abs(b.change24h)-Math.abs(a.change24h):state.sort==='move'?Math.abs(b.activity?.movePct??0)-Math.abs(a.activity?.movePct??0):state.sort==='rvol'?(b.rvol??-1)-(a.rvol??-1):state.sort==='volume'?b.volume24h-a.volume24h:(b.score??-1)-(a.score??-1)||b.volume24h-a.volume24h);}
 function renderMarkets(){
   const all=marketRows(),rows=all.slice(0,state.marketLimit),scanned=all.filter(m=>m.bars.length).length;
   $('#result-count').textContent=all.length+' tirgi · '+scanned+' ar sveču vēsturi · RVOL periods '+state.settings.period;
@@ -123,7 +123,7 @@ async function loadSignals(append=false){
 async function page(view){
   const request=state.pageRequest=(state.pageRequest||0)+1;
   if(state.view!==view){state.query='';$('#search').value='';state.asset='ALL';$('#asset-filter').value='ALL';state.direction='all';$$('[data-direction]').forEach(b=>b.classList.toggle('selected',b.dataset.direction==='all'));state.classMode='markets';}
-  state.marketLimit=100;state.view=view;state.observer?.disconnect();$('#sidebar').classList.remove('open');
+  state.marketLimit=100;state.view=view;if(view==='top10'){state.sort='volume';$('#sort').value='volume';}state.observer?.disconnect();$('#sidebar').classList.remove('open');
   const targetScope=({crypto:'CRYPTO',top10:'CRYPTO',stocks:'STOCK',commodities:'COMMODITY'})[view];
   if(targetScope&&targetScope!==scope())state.settings=await api('/api/settings',{assetScope:targetScope});
   if(request!==state.pageRequest)return;chrome();
