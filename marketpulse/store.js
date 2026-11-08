@@ -28,6 +28,11 @@ export class BrowserStore{
   getState(key){return this.kvMap.get(key)||null;}
   putMarket(m){this.marketsMap.set(m.id,m);this.write('markets',m.id,m);}
   market(id){return this.marketsMap.get(id)||null;}
+  async prepareInventory(){
+    const meta=this.kvMap.get('candle-meta')||{},missing=Object.keys(this.candleCounts||{}).filter(key=>this.candleCounts[key]>0&&!Number.isFinite(meta[key]?.lastTs));
+    for(let i=0;i<missing.length;i+=24)await Promise.all(missing.slice(i,i+24).map(async key=>{const split=key.lastIndexOf('|');await this.prepareCandles(key.slice(0,split),key.slice(split+1));const bars=this.candlesMap.get(key);if(bars?.length)meta[key]={firstTs:bars[0].ts,lastTs:bars.at(-1).ts};}));
+    if(missing.length){this.kvMap.set('candle-meta',meta);this.write('kv','candle-meta',meta);}
+  }
   database(selectedIds=[]){const meta=this.kvMap.get('candle-meta')||{},rows=Object.entries(this.candleCounts||{}).map(([key,count])=>{const split=key.lastIndexOf('|');return {market:key.slice(0,split),tf:key.slice(split+1),count,...meta[key]};});return databaseRows([...this.marketsMap.values()],rows,selectedIds);}
   async prepareCandles(id,tf){const key=id+'|'+tf;if(this.candlesMap.has(key))return;if(this.db){try{const value=await request(this.db.transaction('candles').objectStore('candles').get(key));if(value)this.candlesMap.set(key,value);}catch{}}}
   putCandles(id,tf,bars){const key=id+'|'+tf,old=this.candlesMap.get(key)||[],all=[...new Map([...old,...bars].map(b=>[b.ts,b])).values()].sort((a,b)=>a.ts-b.ts).slice(-5000);this.candlesMap.set(key,all);this.candleCounts??={};this.candleCount+=all.length-(this.candleCounts[key]||0);this.candleCounts[key]=all.length;this.write('candles',key,all);this.write('kv','candle-counts',this.candleCounts);const meta=this.kvMap.get('candle-meta')||{};meta[key]={firstTs:all[0]?.ts??null,lastTs:all.at(-1)?.ts??null};this.kvMap.set('candle-meta',meta);this.write('kv','candle-meta',meta);}
