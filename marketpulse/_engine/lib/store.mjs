@@ -2,7 +2,8 @@ import {DatabaseSync} from 'node:sqlite';
 import {mkdirSync} from 'node:fs';
 import {dirname} from 'node:path';
 import {TF,PERIOD} from './analytics.mjs';
-export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL'};
+import {SCANNER_IDS,databaseRows} from './panels.mjs';
+export const DEFAULT_SETTINGS={source:'auto',timeframe:'15m',period:'15m',maxMarkets:300,minVolume24h:100000,minTradfiVolume24h:0,refreshSeconds:60,sound:false,saved:[],assetClass:'ALL',assetScope:'ALL',visibleScanners:SCANNER_IDS};
 export function validateSettings(input,current=DEFAULT_SETTINGS){
   if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('Settings must be an object');
   const allowed=new Set(Object.keys(DEFAULT_SETTINGS));for(const key of Object.keys(input))if(!allowed.has(key))throw new Error('Unknown setting: '+key);
@@ -12,6 +13,8 @@ export function validateSettings(input,current=DEFAULT_SETTINGS){
   for(const [key,min,max]of [['maxMarkets',5,1000],['minVolume24h',0,1e12],['minTradfiVolume24h',0,1e12],['refreshSeconds',30,600]])if(!Number.isFinite(s[key])||s[key]<min||s[key]>max)throw new Error('Invalid '+key);
   if(!Number.isInteger(s.maxMarkets)||!Number.isInteger(s.refreshSeconds)||typeof s.sound!=='boolean'||!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetClass))throw new Error('Invalid settings');
   if(!Array.isArray(s.saved)||s.saved.length>200||s.saved.some(x=>typeof x!=='string'||x.length>100))throw new Error('Invalid saved markets');
+  if(!['ALL','CRYPTO','STOCK','COMMODITY'].includes(s.assetScope)||!Array.isArray(s.visibleScanners)||s.visibleScanners.length>6||s.visibleScanners.some(x=>!SCANNER_IDS.includes(x)))throw new Error('Invalid dashboard settings');
+  s.visibleScanners=[...new Set(s.visibleScanners)];
   return s;
 }
 export class Store{
@@ -33,6 +36,7 @@ export class Store{
   getState(key){const row=this.db.prepare('SELECT value FROM state WHERE key=?').get(key);return row?JSON.parse(row.value):null;}
   putMarket(m){this.db.prepare('INSERT INTO markets VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET document=excluded.document,updated=excluded.updated').run(m.id,JSON.stringify(m),Date.now());}
   market(id){const r=this.db.prepare('SELECT document FROM markets WHERE id=?').get(id);return r?JSON.parse(r.document):null;}
+  database(selectedIds=[]){return databaseRows(this.db.prepare('SELECT document FROM markets').all().map(r=>JSON.parse(r.document)),this.db.prepare('SELECT market,tf,count(*) AS count,min(ts) AS firstTs,max(ts) AS lastTs FROM candles GROUP BY market,tf').all(),selectedIds);}
   putCandles(id,tf,bars){const stmt=this.db.prepare('INSERT INTO candles VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(market,tf,ts) DO UPDATE SET o=excluded.o,h=excluded.h,l=excluded.l,c=excluded.c,v=excluded.v,q=excluded.q');this.db.exec('BEGIN');try{for(const b of bars)stmt.run(id,tf,b.ts,b.o,b.h,b.l,b.c,b.v,b.q??null);this.db.exec('COMMIT');}catch(e){this.db.exec('ROLLBACK');throw e;}}
   candles(id,tf,limit=5000){return this.db.prepare('SELECT ts,o,h,l,c,v,q FROM candles WHERE market=? AND tf=? ORDER BY ts DESC LIMIT ?').all(id,tf,limit).reverse().map(x=>({...x}));}
   addSignal(s,cooldownMs=0){

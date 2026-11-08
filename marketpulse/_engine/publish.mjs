@@ -4,9 +4,11 @@ import {Store} from './lib/store.mjs';
 import {ScannerEngine} from './lib/engine.mjs';
 import {SOURCES} from './lib/adapters.mjs';
 import {TF} from './lib/analytics.mjs';
+import {fetchNews} from './lib/news.mjs';
 const base='https://edvins99.github.io/Badplayz/marketpulse/data/',out=resolve(import.meta.dirname,'..','data'),store=new Store(':memory:');
 const previous=async file=>{try{const r=await fetch(base+file+'?build='+Date.now(),{signal:AbortSignal.timeout(15000)});if(r.ok)return await r.json();}catch{}return null;};
-const [history,universe]=await Promise.all([previous('history.json'),previous('universe.json')]);
+const newsPending=fetchNews();
+const [history,universe,oldNews]=await Promise.all([previous('history.json'),previous('universe.json'),previous('news.json')]);
 for(const s of (history?.signals||[]).slice(0,1500)){
   if(!s||!SOURCES.includes(s.market?.source)||!['MOVES','LEVELS','SLOPE'].includes(s.strategy)||!TF[s.timeframe]||!Number.isFinite(s.createdAt)||s.createdAt>Date.now()+1000||!Array.isArray(s.snapshot)||s.snapshot.length>1000)continue;
   const {result,...signal}=s;store.putMarket(signal.market);store.addSignal(signal);if(result)store.putResult(signal.id,result);
@@ -19,6 +21,7 @@ try{
   await engine.scan();if(!engine.snapshot.rows.length)throw new Error(engine.status.error||'No verified exchange data; keeping the prior deployment');
   mkdirSync(out,{recursive:true});
   const write=(name,data)=>writeFileSync(resolve(out,name),JSON.stringify(data));
+  const news=await newsPending;write('news.json',{...news,rows:[...new Map([...news.rows,...(oldNews?.rows||[])].map(r=>[r.url,r])).values()].sort((a,b)=>b.publishedAt-a.publishedAt).slice(0,120)});
   write('snapshot.json',{...engine.view(),host:'github-pages',generatedAt:new Date().toISOString(),publicFeed:true});
   write('history.json',{generatedAt:new Date().toISOString(),mode:'live',signals:store.signals({limit:1500}),listings:store.listings(1000)});
   write('universe.json',Object.fromEntries(store.db.prepare('SELECT source,symbols FROM universe').all().map(r=>[r.source,JSON.parse(r.symbols)])));

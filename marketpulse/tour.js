@@ -1,5 +1,11 @@
 export function installTour({navigate}){
   const steps=[
+    ['dashboard','#asset-scope','Aktīvu grupas','Visi tirgi, Kripto, Akcijas un Izejvielas filtrē pašreizējo sadaļu. Izvēle saglabājas šajā pārlūkā.'],
+    ['dashboard','#scanner-toggles','Mani skeneri','Seši slēdži rāda vai paslēpj pārskata blokus. Skenera nosaukums atver pilno plūsmu. Slēdzis nemaina fona aprēķinus.'],
+    ['dashboard','#market-content','Pārskata kolonnas','Katrs bloks rāda savus jaunākos signālus. Kartītes grafiks atver saglabāto signāla momentuzņēmumu.'],
+    ['top10','#market-content','Top 10 kripto','Desmit kripto pēc mūsu avotos likvīdākā tirgus 24 stundu apgrozījuma. Katrs kripto ir vienu reizi; stabilās un atlasītās ietītās monētas ir izslēgtas.'],
+    ['news','#market-content','Ziņas','Atsevišķa ziņu plūsma ar avotu, publicēšanas laiku un oriģinālo rakstu. Akciju plūsma seko AAPL, MSFT, NVDA un SPY.'],
+    ['database','#market-content','Datubāze','Filtrē instrumentus pēc biržas un tirgus veida. Sveces un intervāli rāda tieši saglabāto vēsturi šajā krātuvē.'],
     ['markets','#navigation','Visas sadaļas','Kreisajā izvēlnē atver tirgus, skenerus, akcijas, izejvielas, jaunumus un rezultātus. Tev nav jāreģistrējas.'],
     ['markets','#search','Meklēšana','Ieraksti BTC, AAPL vai uzņēmuma nosaukumu. Saraksts uzreiz atlasīs atbilstošos tirgus.'],
     ['markets','#filter-button','Filtri un kārtošana','Poga Filtri atver aktīvu grupu, kustības un RVOL atlasi. Kārtot maina tabulas secību. Tukšs RVOL nozīmē, ka vēl trūkst vēstures.'],

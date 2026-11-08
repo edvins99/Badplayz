@@ -7,7 +7,12 @@ This is a personal, read-only market scanner. No accounts, payments, trading key
 ## Using the application
 
 - Open the URL. No Node.js process or localhost server is needed.
-- **Kā lietot?** starts a 14-step interactive guide through the controls.
+- **Kā lietot?** starts an interactive guide through the controls.
+- The dashboard has six independently visible scanners: Moves, Levels, Slope, Commodities, Top 10 Crypto and Stocks. Sidebar switches persist after reload; they control dashboard visibility, not background detection.
+- Global All/Crypto/Stocks/Commodities tabs filter the current view and persist on this device.
+- News is separate from Listings: CoinDesk, Yahoo Finance (AAPL/MSFT/NVDA/SPY), U.S. EIA and Federal Reserve RSS headlines, with original links, timestamps and explicit source failures. Public feed refreshes also update news.
+- Database shows per-venue instruments, saved candle counts/timeframes/latest timestamps and scan selection, with exchange/type/history filters and chart links.
+- Top 10 ranks each crypto by its single highest-volume available venue over 24h, deduplicating spot/perpetual venues and excluding the configured stable/wrapped/gold token list. It is not market-cap ranking.
 - Markets, Crypto, Stocks/ETF and Commodities show discovered instruments even without signals. Search, filter, sort, switch cards/table and open any instrument's chart.
 - Stars save instruments to this browser. Charts support 30/80/160 candles and frozen signal overlays.
 - MOVES, LEVELS and SLOPE show qualifying observations. Empty feeds remain empty when no rule qualifies; prices/signals are never silently replaced by simulated data.
