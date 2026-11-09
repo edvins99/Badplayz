@@ -1,0 +1,167 @@
+================================================================
+   EKRĀNA IERAKSTA PROGRAMMA — INSTRUKCIJA
+   (kā uzinstalēt un kā palaist)
+================================================================
+
+
+KAS ŠĪ PROGRAMMA DARA
+------------------------------------------------
+Nospied taustiņu - sākas ekrāna ieraksts.
+Nospied vēlreiz - apstājas un saglabā video (MP4 fails).
+
+Taustiņi:
+   F9  = sākt / apturēt ierakstu (un saglabāt)
+   F8  = pauze / turpināt
+   F7  = izvēlēties ekrāna apgabalu (ar peli)
+   F10 = iziet no programmas
+
+
+================================================================
+   1. SOLIS — UZINSTALĒ PYTHON
+================================================================
+
+1) Atver pārlūku un ej uz:  https://www.python.org/downloads/
+
+2) Spied lielo dzelteno pogu "Download Python".
+
+3) Atver lejupielādēto failu.
+
+4) ! ! ! ĻOTI SVARĪGI ! ! !
+   Pašā apakšā ATZĪMĒ rūtiņu:
+        [ x ] Add Python to PATH
+   Tikai tad spied "Install Now".
+
+5) Pagaidi, kamēr instalācija pabeidzas. Spied "Close".
+
+
+================================================================
+   2. SOLIS — UZINSTALĒ FFMPEG (video dzinējs)
+================================================================
+
+1) Ej uz:  https://www.gyan.dev/ffmpeg/builds/
+
+2) Atrodi sadaļu "release builds" un lejupielādē failu:
+        ffmpeg-release-essentials.zip
+
+3) Izņem (extract) ZIP failu. Iegūsi mapi, piem.:
+        ffmpeg-7.0-essentials_build
+
+4) Iekšā atradīsi mapi "bin", kurā ir "ffmpeg.exe".
+
+VIEGLĀKAIS VARIANTS:
+   Nokopē "ffmpeg.exe" no "bin" mapes
+   un ieliec to TAJĀ PAŠĀ mapē, kur programmas faili
+   (kur ir "recorder.py").
+   Tad nekas papildus nav jādara.
+
+
+================================================================
+   3. SOLIS — LEJUPIELĀDĒ PROGRAMMU
+================================================================
+
+1) Ej uz:  https://github.com/edvins99/Badplayz
+
+2) Spied zaļo pogu "Code" -> "Download ZIP".
+
+3) Izņem (extract) ZIP failu uz Desktopu.
+
+4) Atver mapi:  Badplayz -> screen_recorder
+   Tur ir faili:
+        recorder.py
+        requirements.txt
+        START_recorder_Windows.bat
+
+
+================================================================
+   4. SOLIS — PALAID PROGRAMMU
+================================================================
+
+VISVIEGLĀKAIS VEIDS (Windows):
+
+   Dubultklikšķis uz faila:
+        START_recorder_Windows.bat
+
+   - Tas automātiski uzinstalēs vajadzīgo
+   - Palaidīs programmu kā administratoru
+   - (Ja parādās brīdinājums "Windows protected your PC",
+      spied "More info" -> "Run anyway")
+
+
+CITS VEIDS (manuāli):
+
+   1) Atver to mapi, kur ir "recorder.py"
+   2) Adreses joslā uzraksti  cmd  un spied ENTER
+      (atvērsies melns logs - komandrinda)
+   3) Uzraksti šo un spied ENTER:
+            pip install -r requirements.txt
+   4) Tad uzraksti šo un spied ENTER:
+            python recorder.py
+
+
+================================================================
+   5. SOLIS — KĀ LIETOT
+================================================================
+
+Kad programma palaista, redzēsi izvēlni ar taustiņiem.
+
+1) (Pēc izvēles) Nospied F7 un ar peli atzīmē, kuru
+   ekrāna daļu ierakstīt. Vai izlaid šo soli, lai
+   ierakstītu visu ekrānu.
+
+2) Nospied F9 - sākas ieraksts.
+
+3) Vajag pārtraukt uz brīdi? Nospied F8 (pauze),
+   un vēlreiz F8, lai turpinātu.
+
+4) Nospied F9 - ieraksts apstājas un saglabājas.
+
+5) Nospied F10, lai aizvērtu programmu.
+
+
+KUR ATRODAS IERAKSTĪTIE VIDEO?
+------------------------------------------------
+   Tava lietotāja mape -> Videos -> ScreenRecordings
+
+   Piemērs:
+   C:\Users\TavsVards\Videos\ScreenRecordings\
+
+   Faili saucas: recording_2026-06-30_21-45-00.mp4
+   (ar datumu un laiku, tāpēc nekas netiek pārrakstīts)
+
+
+================================================================
+   BIEŽĀKĀS PROBLĒMAS
+================================================================
+
+PROBLĒMA: "FFmpeg nav atrasts"
+RISINĀJUMS: Pārliecinies, ka ffmpeg.exe ir tajā pašā mapē,
+            kur recorder.py (skat. 2. soli).
+
+PROBLĒMA: Taustiņi F9/F8 nereaģē
+RISINĀJUMS: Palaid programmu KĀ ADMINISTRATORU.
+            (Izmanto START_recorder_Windows.bat - tas to dara pats.)
+
+PROBLĒMA: "python" netiek atpazīts
+RISINĀJUMS: Pārinstalē Python un ATZĪMĒ "Add Python to PATH"
+            (skat. 1. soli, 4. punktu).
+
+PROBLĒMA: Video fails ir ļoti liels
+RISINĀJUMS: Atver recorder.py ar Notepad, atrodi rindu
+            CRF = 23  un nomaini uz  CRF = 28
+            (lielāks skaitlis = mazāks fails).
+
+PROBLĒMA: Gribu citu taustiņu, ne F9
+RISINĀJUMS: Atver recorder.py ar Notepad, atrodi rindu
+            HOTKEY_TOGGLE = "f9"  un nomaini, piem. uz
+            HOTKEY_TOGGLE = "ctrl+shift+r"
+
+
+================================================================
+   PADOMS
+================================================================
+
+Ierakstītos MP4 failus vari uzreiz ievilkt CapCut programmā
+montāžai - griezt, pievienot tekstu, mūziku utt.
+
+Veiksmi!
+================================================================
